@@ -1,0 +1,103 @@
+{
+	"name" : "Three Count With 441",
+	"jugglerCount" : 2,
+	"beatCount" : 6,
+	"beats" : [
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"R",
+					"targetJuggler":1,
+					"throwHeight": 4
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"R",
+					"targetJuggler":1,
+					"throwHeight": 3
+				}
+			]
+		},
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"L",
+					"targetJuggler":0,
+					"throwHeight":1
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"L",
+					"targetJuggler":0,
+					"throwHeight":3
+				}
+			]
+		},
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"R",
+					"targetJuggler":0,
+					"throwHeight":4
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"R",
+					"targetJuggler":1,
+					"throwHeight":3
+				}
+			]
+		},
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"L",
+					"targetJuggler":1,
+					"throwHeight":4
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"L",
+					"targetJuggler":1,
+					"throwHeight":3
+				}
+			]
+		},
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"R",
+					"targetJuggler":0,
+					"throwHeight":1
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"R",
+					"targetJuggler":0,
+					"throwHeight":3
+				}
+			]
+		},
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"L",
+					"targetJuggler":0,
+					"throwHeight":4
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"L",
+					"targetJuggler":1,
+					"throwHeight":3
+				}
+			]
+		}
+	]
+}

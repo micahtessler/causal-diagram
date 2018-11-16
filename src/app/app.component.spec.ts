@@ -4,7 +4,8 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NavbarComponent } from './navbar/navbar.component';
 import { LayoutModule } from '@angular/cdk/layout';
-import { MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule } from '@angular/material';
+import { MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule, MatCardModule, MatMenuModule } from '@angular/material';
+import { DiagramCardComponent } from './diagram-card/diagram-card.component';
 
 
 describe('AppComponent', () => {
@@ -18,11 +19,14 @@ describe('AppComponent', () => {
         MatButtonModule,
         MatSidenavModule,
         MatIconModule,
-        MatListModule
+        MatListModule,
+        MatCardModule,
+        MatMenuModule
       ],
       declarations: [
         AppComponent,
-        NavbarComponent
+        NavbarComponent,
+        DiagramCardComponent
       ],
     }).compileComponents();
   }));

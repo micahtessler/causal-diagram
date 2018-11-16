@@ -1,0 +1,95 @@
+{
+	"name" : "Four Count Feed",
+	"jugglerCount" : 3,
+	"beatCount" : 6,
+	"beats" : [
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"R",
+					"targetJuggler":1,
+					"throwHeight": 3
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"R",
+					"targetJuggler":0,
+					"throwHeight": 3
+				},
+				{
+					"sourceJuggler":2,
+					"sourceHand":"R",
+					"targetJuggler":2,
+					"throwHeight": 3
+				}
+			]
+		},
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"L",
+					"targetJuggler":0,
+					"throwHeight":3
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"L",
+					"targetJuggler":1,
+					"throwHeight":3
+				},
+				{
+					"sourceJuggler":2,
+					"sourceHand":"L",
+					"targetJuggler":2,
+					"throwHeight": 3
+				}
+			]
+		},
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"R",
+					"targetJuggler":0,
+					"throwHeight":3
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"R",
+					"targetJuggler":2,
+					"throwHeight":3
+				},
+				{
+					"sourceJuggler":2,
+					"sourceHand":"R",
+					"targetJuggler":1,
+					"throwHeight": 3
+				}
+			]
+		},
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"L",
+					"targetJuggler":0,
+					"throwHeight":3
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"L",
+					"targetJuggler":1,
+					"throwHeight":3
+				},
+				{
+					"sourceJuggler":2,
+					"sourceHand":"L",
+					"targetJuggler":2,
+					"throwHeight":3
+				}
+			]
+		}
+	]
+}

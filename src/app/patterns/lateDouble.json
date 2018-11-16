@@ -1,0 +1,71 @@
+{
+	"name" : "Late Double",
+	"jugglerCount" : 2,
+	"beatCount" : 4,
+	"beats" : [
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"R",
+					"targetJuggler":1,
+					"throwHeight": 4
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"R",
+					"targetJuggler":0,
+					"throwHeight": 3
+				}
+			]
+		},
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"L",
+					"targetJuggler":0,
+					"throwHeight":3
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"L",
+					"targetJuggler":1,
+					"throwHeight":2
+				}
+			]
+		},
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"R",
+					"targetJuggler":0,
+					"throwHeight":3
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"R",
+					"targetJuggler":1,
+					"throwHeight":3
+				}
+			]
+		},
+		{
+			"throws": [
+				{
+					"sourceJuggler":0,
+					"sourceHand":"L",
+					"targetJuggler":0,
+					"throwHeight":3
+				},
+				{
+					"sourceJuggler":1,
+					"sourceHand":"L",
+					"targetJuggler":1,
+					"throwHeight":3
+				}
+			]
+		}
+	]
+}
