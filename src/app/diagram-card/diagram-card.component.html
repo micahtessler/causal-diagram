@@ -8,8 +8,8 @@
   <img mat-card-image src="https://material.angular.io/assets/img/examples/shiba2.jpg" alt="Photo of a Shiba Inu">
   <mat-card-content>
     <ul>
-      <li> X Jugglers</li>
-      <li> X Clubs</li>
+      <li> {{patternService.selectedPattern.jugglerCount}} Jugglers</li>
+      <li> {{patternService.clubCount(patternService.selectedPattern)}} Clubs</li>
     </ul>
 
   </mat-card-content>

@@ -41,4 +41,16 @@ export class PatternService {
   public selectedPattern: Pattern = null;
 
   constructor() { }
+
+  public clubCount(pattern: Pattern) : number {
+
+    let runningTotal = 0;
+    for(let beat of pattern.beats) {
+      for(let throwObj of beat.throws) {
+        runningTotal += throwObj.throwHeight;
+      }
+    }
+    const clubCount = runningTotal / (pattern.beats.length);
+    return clubCount;
+  }
 }
