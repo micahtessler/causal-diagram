@@ -22,37 +22,40 @@ export class DiagramService {
   readonly CIRCLE_CORNER_X = (Math.round((Math.cos(this.CIRCLE_CORNER_ANGLE) * this.CIRCLE_RADIUS) * 100) / 100);
   readonly CIRCLE_CORNER_Y = (Math.round((Math.sin(this.CIRCLE_CORNER_ANGLE) * this.CIRCLE_RADIUS) * 100) / 100);
 
+  diagramWidth: number;
+  diagramHeight: number;
+
   drawSVG(div: HTMLDivElement): SVG.Doc {
 
     const draw = SVG(div);
 
 
-    const diagramWidth = this.BEAT_WIDTH * this.patternService.selectedPattern.beats.length;
-    const diagramHeight = this.BEAT_HEIGHT * (this.patternService.selectedPattern.jugglerCount + 1);
+    this.diagramWidth = this.BEAT_WIDTH * this.patternService.selectedPattern.beats.length;
+    this.diagramHeight = this.BEAT_HEIGHT * (this.patternService.selectedPattern.jugglerCount + 1);
 
-    draw.viewbox(0, 0, diagramWidth, diagramHeight);
+    draw.viewbox(0, 0, this.diagramWidth, this.diagramHeight);
 
     //create arrow heads
     const defs = draw.defs();
     const arrowMarker = this.initArrow(defs);
 
 
-    const borderWest = draw.line(0, 0, 0, diagramHeight);
+    const borderWest = draw.line(0, 0, 0, this.diagramHeight);
     borderWest.addClass('causal_border');
     borderWest.id('causal_border_west');
 
 
-    const borderEast = draw.line(diagramWidth, 0, diagramWidth, diagramHeight);
+    const borderEast = draw.line(this.diagramWidth, 0, this.diagramWidth, this.diagramHeight);
     borderEast.addClass('causal_border');
     borderEast.id('causal_border_east');
 
 
-    const borderNorth = draw.line(0, 1, diagramWidth, 1);
+    const borderNorth = draw.line(0, 1, this.diagramWidth, 1);
     borderNorth.addClass('causal_border');
     borderNorth.id('causal_border_north');
 
 
-    const borderSouth = draw.line(0, diagramHeight, diagramWidth, diagramHeight);
+    const borderSouth = draw.line(0, this.diagramHeight, this.diagramWidth, this.diagramHeight);
     borderSouth.addClass('causal_border');
     borderSouth.id('causal_border_south');
 
@@ -178,32 +181,27 @@ export class DiagramService {
     if (throwObj.sourceJuggler != throwObj.targetJuggler) {
       return true;
     } else {
-      var beatDiff = (throwObj.throwHeight - 2);
+      const beatDiff = (throwObj.throwHeight - 2);
       return (beatDiff === 1);
     }
   }
 
   drawThrowLine(draw: SVG.Doc, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast: SVG.Line, borderWest: SVG.Line): void {
-    var beat1Pos = this.getBeatPosition(beatNb, throwObj.sourceJuggler);
+    const beat1Pos = this.getBeatPosition(beatNb, throwObj.sourceJuggler);
 
-    var beatDiff = this.getBeatDiff(throwObj);
-    var beat2Nb = beatNb + beatDiff;
-    var beat2Pos = this.getBeatPosition(beat2Nb, throwObj.targetJuggler);
-    var straightThrow = false;
-    var upThrow = false;
-    var downThrow = false;
-    var startPos;
-    var endPos;
+    const beatDiff = this.getBeatDiff(throwObj);
+    const beat2Nb = beatNb + beatDiff;
+    const beat2Pos = this.getBeatPosition(beat2Nb, throwObj.targetJuggler);
+    let straightThrow = false;
+    let upThrow = false;
+    let startPos;
+    let endPos;
 
     if (throwObj.sourceJuggler === throwObj.targetJuggler) {
       straightThrow = true;
       //if (beatDiff === 1) {
       startPos = this.getCircleRight(beat1Pos);
       endPos = this.getCircleLeft(beat2Pos);
-      /*} else if (beatDiff === -1) {
-        startPos = this.getLeft(beat1Pos);
-        endPos = this.getRight(beat2Pos);
-      }*/
     } else {
       //this must be a positive height
       if (throwObj.sourceJuggler > throwObj.targetJuggler) {
@@ -211,34 +209,28 @@ export class DiagramService {
         startPos = this.getCircleUpperRight(beat1Pos);
         endPos = this.getCircleLowerLeft(beat2Pos);
       } else {
-        downThrow = true;
         startPos = this.getCircleLowerRight(beat1Pos);
         endPos = this.getCircleUpperLeft(beat2Pos);
       }
     }
-    var line = draw.line(startPos.x, startPos.y, endPos.x, endPos.y);
-    line.addClass("causal_pass_line");
+    const line = draw.line(startPos.x, startPos.y, endPos.x, endPos.y);
+    line.addClass('causal_pass_line');
     line.id(id);
-    line.marker("end", arrowMarker);
+    line.marker('end', arrowMarker);
 
-    var intersectionPoint = this.getLineIntersection(line, borderEast);
-    /*
-    if (intersectionPoints) {
-      console.log(id+".intersectionPoint="+JSON.stringify(intersectionPoint));
-    }
-    */
+    const intersectionPoint = this.getLineIntersection(line, borderEast);
 
     if (intersectionPoint != null) {
       //wrapping around right diagram edge
 
       //remove the marker
-      line.marker("end", 0, 0, () => { });
+      line.marker('end', 0, 0, () => { });
       line.plot(startPos.x, startPos.y, intersectionPoint.x, intersectionPoint.y);
 
       //create a new line starting from the edge of the screen.
       //Beat2Nb is negative, so add beats
-      var newBeat2Nb = beat2Nb % this.patternService.selectedPattern.beats.length;
-      var newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
+      const newBeat2Nb = beat2Nb % this.patternService.selectedPattern.beats.length;
+      const newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
       if (straightThrow) {
         endPos = this.getCircleLeft(newBeat2Pos);
       } else if (upThrow) {
@@ -246,21 +238,112 @@ export class DiagramService {
       } else {
         endPos = this.getCircleUpperLeft(newBeat2Pos);
       }
-      var newId = id + "_A";
-      var line2 = draw.line(0, intersectionPoint.y, endPos.x, endPos.y);
-      line2.addClass("causal_pass_line");
+      const newId = id + '_A';
+      const line2 = draw.line(0, intersectionPoint.y, endPos.x, endPos.y);
+      line2.addClass('causal_pass_line');
       line2.id(newId);
-      line2.marker("end", arrowMarker);
+      line2.marker('end', arrowMarker);
     }
   }
 
   drawSelfCurve(draw: SVG.Doc, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast: SVG.Line, borderWest: SVG.Line): void {
-    //TODO: not implemented
+    const beat1Pos = this.getBeatPosition(beatNb, throwObj.sourceJuggler);
+    const beatDiff = this.getBeatDiff(throwObj);
+    const beat2Nb = beatNb + beatDiff;
+    const beat2Pos = this.getBeatPosition(beat2Nb, throwObj.targetJuggler);
+
+    let startPos;
+    let endPos;
+    let radiusX;
+    let radiusY;
+    const rotation = 0;
+    const largeArcFlag = 0;
+    const sweepFlag = 1;
+
+    if (beatDiff === -2) {
+      //backwards
+      startPos = this.getCircleLowerLeft(beat1Pos);
+      endPos = this.getCircleLowerRight(beat2Pos);
+      radiusX = 100;
+      radiusY = 100;
+    } else if (beatDiff === -1) {
+      startPos = this.getCircleBottom(beat1Pos);
+      endPos = this.getCircleBottom(beat2Pos);
+      radiusX = 100;
+      radiusY = 100;
+    } else if (beatDiff === 0) {
+      startPos = this.getCircleUpperLeft(beat1Pos);
+      endPos = this.getCircleUpperRight(beat2Pos);
+      radiusX = 20;
+      radiusY = 30;
+    } else {
+      startPos = this.getCircleUpperRight(beat1Pos);
+      endPos = this.getCircleUpperLeft(beat2Pos);
+      radiusX = 100 * (beatDiff - 1);
+      radiusY = 100 * (beatDiff - 1);
+    }
+
+    let pathStr = 'm ' + startPos.x + ' ' + startPos.y + ' A ' + radiusX + ' ' + radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + endPos.x + ' ' + endPos.y;
+    const path = draw.path(pathStr);
+    path.addClass('causal_pass_line');
+    path.fill('transparent');
+    path.id(id);
+    path.marker('end', arrowMarker);
+    let intersectionPoint = this.getLineIntersection(path, borderEast);
+
+    if (intersectionPoint != null) {
+      //wrapping around right diagram edge
+      //remove the marker
+      path.marker('end', 0, 0, () => {});
+
+      pathStr = 'm ' + startPos.x + ' ' + startPos.y + ' A ' + radiusX + ' ' + radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + intersectionPoint.x + ' ' + intersectionPoint.y;
+      path.plot(pathStr);
+
+      const newBeat2Nb = beat2Nb % this.patternService.selectedPattern.beats.length;
+      const newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
+      //has to be forwards
+      endPos = this.getCircleUpperLeft(newBeat2Pos);
+      const newId = id + '_A';
+      pathStr = 'm ' + 0 + ' ' + intersectionPoint.y + ' A ' + radiusX + ' ' + radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + endPos.x + ' ' + endPos.y;
+      const path2 = draw.path(pathStr);
+      path2.addClass('causal_pass_line');
+      path2.fill('transparent');
+      path2.id(newId);
+      path2.marker('end', arrowMarker);
+    }
+
+    intersectionPoint = this.getLineIntersection(path, borderWest);
+
+    if (intersectionPoint != null) {
+      //wrapping around right diagram edge
+      //remove the marker
+      path.marker('end', 0, 0, () => {});
+
+      pathStr = 'm ' + startPos.x + ' ' + startPos.y + ' A ' + radiusX + ' ' + radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + intersectionPoint.x + ' ' + intersectionPoint.y;
+      path.plot(pathStr);
+
+      //create a new line starting from the edge of the screen.
+      let newBeat2Nb = beat2Nb;
+      while (newBeat2Nb < 0) {
+        newBeat2Nb += this.patternService.selectedPattern.beats.length;
+      }
+      const newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
+      //has to be backwards
+      endPos = this.getCircleLowerRight(newBeat2Pos);
+      const newId = id + '_A';
+      pathStr = 'm ' + this.diagramWidth + ' ' + intersectionPoint.y + ' A ' + radiusX + ' ' + radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + endPos.x + ' ' + endPos.y;
+      const path2 = draw.path(pathStr);
+      path2.addClass('causal_pass_line');
+      path2.fill('transparent');
+      path2.id(newId);
+      path2.marker('end', arrowMarker);
+    }
+
   }
 
   getLineIntersection(lineOrPath: any, line: SVG.Line): SVG.Point {
     if (line == null) return null;
-    var intersectionPoints = lineOrPath.intersectsLine(line);
+    const intersectionPoints = lineOrPath.intersectsLine(line);
     if (intersectionPoints != null) {
       if (intersectionPoints.length != null) {
         if (intersectionPoints.length > 0) {
