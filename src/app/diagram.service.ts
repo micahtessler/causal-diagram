@@ -38,23 +38,23 @@ export class DiagramService {
 
 
     const borderWest = draw.line(0, 0, 0, diagramHeight);
-    borderWest.addClass("causal_border");
-    borderWest.id("causal_border_west");
+    borderWest.addClass('causal_border');
+    borderWest.id('causal_border_west');
 
 
     const borderEast = draw.line(diagramWidth, 0, diagramWidth, diagramHeight);
-    borderEast.addClass("causal_border");
-    borderEast.id("causal_border_east");
+    borderEast.addClass('causal_border');
+    borderEast.id('causal_border_east');
 
 
     const borderNorth = draw.line(0, 1, diagramWidth, 1);
-    borderNorth.addClass("causal_border");
-    borderNorth.id("causal_border_north");
+    borderNorth.addClass('causal_border');
+    borderNorth.id('causal_border_north');
 
 
     const borderSouth = draw.line(0, diagramHeight, diagramWidth, diagramHeight);
-    borderSouth.addClass("causal_border");
-    borderSouth.id("causal_border_south");
+    borderSouth.addClass('causal_border');
+    borderSouth.id('causal_border_south');
 
     this.patternService.selectedPattern.beats.forEach((beat, i) => {
       this.drawCircles(draw, i, beat.throws);
@@ -130,24 +130,23 @@ export class DiagramService {
   drawCircles(draw: SVG.Doc, beatNb: number, throws: Array<Throw>): void {
     throws.forEach((throwObj) => {
       const pos = this.getBeatPosition(beatNb, throwObj.sourceJuggler);
-      //console.log("Drawing throw "+j+" at "+beatX+","+beatY);
       //create the circle
       const circle = draw.circle();
 
       circle.radius(this.CIRCLE_RADIUS);
       circle.cx(pos.x);
       circle.cy(pos.y);
-      circle.id("causal_beat_" + beatNb + "_juggler_" + throwObj.sourceJuggler);
-      circle.addClass("causal_beat_circle");
+      circle.id('causal_beat_' + beatNb + '_juggler_' + throwObj.sourceJuggler);
+      circle.addClass('causal_beat_circle');
 
       const text = draw.text(throwObj.sourceHand);
       text.x(pos.x - 10);
       text.y(pos.y - 30);
-      text.id("causal_beat_label_" + beatNb + "_juggler_" + throwObj.sourceJuggler);
-      text.addClass("causal_beat_label")
+      text.id('causal_beat_label_' + beatNb + '_juggler_' + throwObj.sourceJuggler);
+      text.addClass('causal_beat_label')
       text.font({
         family: 'sans-serif'
-        , size: "35"
+        , size: '35'
       });
     });
   }
@@ -155,7 +154,7 @@ export class DiagramService {
   drawThrows(draw: SVG.Doc, beatNb: number, throws: Array<Throw>, arrowMarker: any, borderEast: SVG.Line, borderWest: SVG.Line): void {
     for (let j = 0; j < throws.length; j++) {
       //TODO: need a better ID system for throws (multiplexes...)
-      const id = "throw_" + beatNb + "_" + throws[j].sourceJuggler;
+      const id = 'throw_' + beatNb + '_' + throws[j].sourceJuggler;
 
       if (this.isLineInDiagram(throws[j])) {
         this.drawThrowLine(draw, id, throws[j], beatNb, arrowMarker, borderEast, borderWest);
@@ -165,21 +164,115 @@ export class DiagramService {
       }
     }
   }
-  initArrow(defs: any): any {
-    //TODO: not implemented
-    return null;
+  initArrow(defs: SVG.Defs): SVG.Marker {
+    const arrowMarker = defs.marker(5, 5, function (add) {
+      const path = add.path('M0,0 L0,3 L4.5,1.5 z');
+      path.addClass('causal_arrow');
+    });
+    arrowMarker.ref(0, 1.5);
+    arrowMarker.id('arrowMarker');
+    return arrowMarker;
   }
 
   isLineInDiagram(throwObj: Throw): boolean {
-    //TODO: not implemented
-    return true;
+    if (throwObj.sourceJuggler != throwObj.targetJuggler) {
+      return true;
+    } else {
+      var beatDiff = (throwObj.throwHeight - 2);
+      return (beatDiff === 1);
+    }
   }
 
   drawThrowLine(draw: SVG.Doc, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast: SVG.Line, borderWest: SVG.Line): void {
-    //TODO: not implemented
+    var beat1Pos = this.getBeatPosition(beatNb, throwObj.sourceJuggler);
+
+    var beatDiff = this.getBeatDiff(throwObj);
+    var beat2Nb = beatNb + beatDiff;
+    var beat2Pos = this.getBeatPosition(beat2Nb, throwObj.targetJuggler);
+    var straightThrow = false;
+    var upThrow = false;
+    var downThrow = false;
+    var startPos;
+    var endPos;
+
+    if (throwObj.sourceJuggler === throwObj.targetJuggler) {
+      straightThrow = true;
+      //if (beatDiff === 1) {
+      startPos = this.getCircleRight(beat1Pos);
+      endPos = this.getCircleLeft(beat2Pos);
+      /*} else if (beatDiff === -1) {
+        startPos = this.getLeft(beat1Pos);
+        endPos = this.getRight(beat2Pos);
+      }*/
+    } else {
+      //this must be a positive height
+      if (throwObj.sourceJuggler > throwObj.targetJuggler) {
+        upThrow = true;
+        startPos = this.getCircleUpperRight(beat1Pos);
+        endPos = this.getCircleLowerLeft(beat2Pos);
+      } else {
+        downThrow = true;
+        startPos = this.getCircleLowerRight(beat1Pos);
+        endPos = this.getCircleUpperLeft(beat2Pos);
+      }
+    }
+    var line = draw.line(startPos.x, startPos.y, endPos.x, endPos.y);
+    line.addClass("causal_pass_line");
+    line.id(id);
+    line.marker("end", arrowMarker);
+
+    var intersectionPoint = this.getLineIntersection(line, borderEast);
+    /*
+    if (intersectionPoints) {
+      console.log(id+".intersectionPoint="+JSON.stringify(intersectionPoint));
+    }
+    */
+
+    if (intersectionPoint != null) {
+      //wrapping around right diagram edge
+
+      //remove the marker
+      line.marker("end", 0, 0, () => { });
+      line.plot(startPos.x, startPos.y, intersectionPoint.x, intersectionPoint.y);
+
+      //create a new line starting from the edge of the screen.
+      //Beat2Nb is negative, so add beats
+      var newBeat2Nb = beat2Nb % this.patternService.selectedPattern.beats.length;
+      var newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
+      if (straightThrow) {
+        endPos = this.getCircleLeft(newBeat2Pos);
+      } else if (upThrow) {
+        endPos = this.getCircleLowerLeft(newBeat2Pos);
+      } else {
+        endPos = this.getCircleUpperLeft(newBeat2Pos);
+      }
+      var newId = id + "_A";
+      var line2 = draw.line(0, intersectionPoint.y, endPos.x, endPos.y);
+      line2.addClass("causal_pass_line");
+      line2.id(newId);
+      line2.marker("end", arrowMarker);
+    }
   }
-  
+
   drawSelfCurve(draw: SVG.Doc, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast: SVG.Line, borderWest: SVG.Line): void {
     //TODO: not implemented
+  }
+
+  getLineIntersection(lineOrPath: any, line: SVG.Line): SVG.Point {
+    if (line == null) return null;
+    var intersectionPoints = lineOrPath.intersectsLine(line);
+    if (intersectionPoints != null) {
+      if (intersectionPoints.length != null) {
+        if (intersectionPoints.length > 0) {
+          return intersectionPoints[0];
+        } else {
+          return null;
+        }
+      } else {
+        return intersectionPoints;
+      }
+    } else {
+      return null;
+    }
   }
 }
