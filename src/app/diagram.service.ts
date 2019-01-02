@@ -1,17 +1,15 @@
 import { Injectable } from '@angular/core';
-import { Pattern } from './model/Pattern';
-import { Beat } from './model/Beat';
 import { Throw } from './model/Throw';
 import { PatternService } from './pattern.service';
 import { Position } from './model/Position';
-import SVG from 'svg.js';
+declare const SVG:any; //SVG inmported in angular.json
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DiagramService {
 
-  constructor(private patternService: PatternService) { }
 
   readonly CIRCLE_RADIUS = 40;
   readonly X_MARGIN = 50;
@@ -24,16 +22,35 @@ export class DiagramService {
 
   diagramWidth: number;
   diagramHeight: number;
+  public div: HTMLDivElement;
 
-  drawSVG(div: HTMLDivElement): SVG.Doc {
+  public divObs: Subject<HTMLDivElement> = new Subject();
+  constructor(private patternService: PatternService) {
+    this.divObs.subscribe((div) => {
+      this.div = div;
+      this.drawSVG();
+    });
+  }
 
-    const draw = SVG(div);
+  drawSVG() {
+    if (this.div == null) {
+      return;
+    }
+    this.div.innerHTML='';
+    if(this.patternService.selectedPattern == null) {
+      return;
+    }
+
+    const draw = SVG(this.div);
 
 
     this.diagramWidth = this.BEAT_WIDTH * this.patternService.selectedPattern.beats.length;
     this.diagramHeight = this.BEAT_HEIGHT * (this.patternService.selectedPattern.jugglerCount + 1);
 
     draw.viewbox(0, 0, this.diagramWidth, this.diagramHeight);
+    const bgRect = draw.rect(this.diagramWidth,  this.diagramHeight);
+    bgRect.addClass('causalBgRect');
+
 
     //create arrow heads
     const defs = draw.defs();
@@ -130,7 +147,7 @@ export class DiagramService {
     );
   }
 
-  drawCircles(draw: SVG.Doc, beatNb: number, throws: Array<Throw>): void {
+  drawCircles(draw, beatNb: number, throws: Array<Throw>): void {
     throws.forEach((throwObj) => {
       const pos = this.getBeatPosition(beatNb, throwObj.sourceJuggler);
       //create the circle
@@ -154,7 +171,7 @@ export class DiagramService {
     });
   }
 
-  drawThrows(draw: SVG.Doc, beatNb: number, throws: Array<Throw>, arrowMarker: any, borderEast: SVG.Line, borderWest: SVG.Line): void {
+  drawThrows(draw, beatNb: number, throws: Array<Throw>, arrowMarker: any, borderEast, borderWest): void {
     for (let j = 0; j < throws.length; j++) {
       //TODO: need a better ID system for throws (multiplexes...)
       const id = 'throw_' + beatNb + '_' + throws[j].sourceJuggler;
@@ -167,7 +184,7 @@ export class DiagramService {
       }
     }
   }
-  initArrow(defs: SVG.Defs): SVG.Marker {
+  initArrow(defs) {
     const arrowMarker = defs.marker(5, 5, function (add) {
       const path = add.path('M0,0 L0,3 L4.5,1.5 z');
       path.addClass('causal_arrow');
@@ -186,7 +203,7 @@ export class DiagramService {
     }
   }
 
-  drawThrowLine(draw: SVG.Doc, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast: SVG.Line, borderWest: SVG.Line): void {
+  drawThrowLine(draw, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast, borderWest): void {
     const beat1Pos = this.getBeatPosition(beatNb, throwObj.sourceJuggler);
 
     const beatDiff = this.getBeatDiff(throwObj);
@@ -246,7 +263,7 @@ export class DiagramService {
     }
   }
 
-  drawSelfCurve(draw: SVG.Doc, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast: SVG.Line, borderWest: SVG.Line): void {
+  drawSelfCurve(draw, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast, borderWest): void {
     const beat1Pos = this.getBeatPosition(beatNb, throwObj.sourceJuggler);
     const beatDiff = this.getBeatDiff(throwObj);
     const beat2Nb = beatNb + beatDiff;
@@ -294,7 +311,7 @@ export class DiagramService {
     if (intersectionPoint != null) {
       //wrapping around right diagram edge
       //remove the marker
-      path.marker('end', 0, 0, () => {});
+      path.marker('end', 0, 0, () => { });
 
       pathStr = 'm ' + startPos.x + ' ' + startPos.y + ' A ' + radiusX + ' ' + radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + intersectionPoint.x + ' ' + intersectionPoint.y;
       path.plot(pathStr);
@@ -317,7 +334,7 @@ export class DiagramService {
     if (intersectionPoint != null) {
       //wrapping around right diagram edge
       //remove the marker
-      path.marker('end', 0, 0, () => {});
+      path.marker('end', 0, 0, () => { });
 
       pathStr = 'm ' + startPos.x + ' ' + startPos.y + ' A ' + radiusX + ' ' + radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + intersectionPoint.x + ' ' + intersectionPoint.y;
       path.plot(pathStr);
@@ -341,7 +358,7 @@ export class DiagramService {
 
   }
 
-  getLineIntersection(lineOrPath: any, line: SVG.Line): SVG.Point {
+  getLineIntersection(lineOrPath: any, line) {
     if (line == null) return null;
     const intersectionPoints = lineOrPath.intersectsLine(line);
     if (intersectionPoints != null) {

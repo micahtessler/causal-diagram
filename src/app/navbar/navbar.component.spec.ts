@@ -10,15 +10,19 @@ describe('NavbarComponent', () => {
   let component: NavbarComponent;
   let breakpointObserver: BreakpointObserver;
   let patternService: any;
+  let diagramService: any;
   const myPattern: Pattern = fourCount as Pattern;
 
   beforeEach(() => {
     breakpointObserver = new BreakpointObserver(null, null);
     patternService = {};
+    diagramService ={
+      drawSVG: jasmine.createSpy()
+    }
     spyOn(breakpointObserver, 'observe').and.returnValue({
       pipe: () => { }
     });
-    component = new NavbarComponent(breakpointObserver, patternService);
+    component = new NavbarComponent(breakpointObserver, patternService, diagramService);
 
   });
 
@@ -32,6 +36,7 @@ describe('NavbarComponent', () => {
       expect(patternService.selectedPattern).toBeUndefined();
       component.selectPattern(myPattern);
       expect(patternService.selectedPattern).toEqual(myPattern);
+      expect(diagramService.drawSVG).toHaveBeenCalled();
     });
   });
 });

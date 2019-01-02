@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Pattern } from '../model/Pattern';
 import { PatternService } from '../pattern.service';
+import { DiagramService } from '../diagram.service';
 
 
 
@@ -20,12 +21,13 @@ export class NavbarComponent {
       map(result => result.matches)
     );
 
-  constructor(private breakpointObserver: BreakpointObserver, private patternService: PatternService) {
+  constructor(private breakpointObserver: BreakpointObserver, private patternService: PatternService, private diagramService: DiagramService) {
 
   }
 
   selectPattern(pattern: Pattern): void {
     this.patternService.selectedPattern = pattern;
+    this.diagramService.drawSVG();
   }
 
 }

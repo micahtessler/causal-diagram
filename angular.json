@@ -25,7 +25,10 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [
+              "./node_modules/svg.js/dist/svg.min.js",
+              "./node_modules/svg.intersections.js/svg.intersections.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -81,7 +84,10 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": [],
+            "scripts": [
+              "./node_modules/svg.js/dist/svg.min.js",
+              "./node_modules/svg.intersections.js/svg.intersections.js"
+            ],
             "assets": [
               "src/favicon.ico",
               "src/assets"

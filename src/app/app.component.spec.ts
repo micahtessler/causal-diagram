@@ -6,6 +6,7 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { LayoutModule } from '@angular/cdk/layout';
 import { MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule, MatCardModule, MatMenuModule } from '@angular/material';
 import { DiagramCardComponent } from './diagram-card/diagram-card.component';
+import {DiagramComponent} from './diagram/diagram.component';
 
 
 describe('AppComponent', () => {
@@ -26,7 +27,8 @@ describe('AppComponent', () => {
       declarations: [
         AppComponent,
         NavbarComponent,
-        DiagramCardComponent
+        DiagramCardComponent,
+        DiagramComponent
       ],
     }).compileComponents();
   }));

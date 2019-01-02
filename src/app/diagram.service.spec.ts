@@ -4,13 +4,15 @@ import { PatternService } from './pattern.service';
 import fourCount from './patterns/fourCount.json';
 import { Pattern } from './model/Pattern';
 import { Throw } from './model/Throw';
-import SVG from 'svg.js';
+import { tick } from '@angular/core/src/render3';
 
-describe('DiagramService', () => {
+
+describe('DiagramService', () => {   
   let service: DiagramService;
   let patternService: PatternService;
   let div: HTMLDivElement;
   let draw;
+
   beforeEach(() => {
     patternService = {
       patterns: [],
@@ -25,6 +27,15 @@ describe('DiagramService', () => {
     expect(service).toBeTruthy();
   });
 
+  describe('divObs', () => {
+    it("should set the div and draw the SVG", () => {
+      spyOn(service, 'drawSVG');
+      let div = document.createElement('div');
+      div.setAttribute('id', 'foobar');
+      service.divObs.observers[0].next(div);
+    });
+  })
+
   describe('beatDiff', function () {
     let throwObj: Throw;
 
@@ -37,13 +48,13 @@ describe('DiagramService', () => {
       };
     });
 
-    describe('drawSVG', function () {
+    describe('drawSVG', () => {
       let pattern: Pattern;
       let totalBeats: number;
       let totalJugglers: number;
 
 
-      beforeEach(function () {
+      beforeEach(async () => {
 
         totalBeats = 3;
         totalJugglers = 3;
@@ -72,6 +83,10 @@ describe('DiagramService', () => {
 
         //clear the page...
         div = document.createElement('div');
+        //service.div = div;
+        service.divObs.next(div);
+        service.divObs.toPromise();
+
         draw = null;
         spyOn(service, 'drawCircles');
         spyOn(service, 'drawThrows');
@@ -83,7 +98,7 @@ describe('DiagramService', () => {
       });
 
       it('should draw the diagram correctly', function () {
-        draw = service.drawSVG(div);
+        draw = service.drawSVG();
 
         let mySvg = div.firstChild as SVGElement;
 
@@ -605,7 +620,7 @@ describe('DiagramService', () => {
           throwObj.sourceJuggler = 0;
           const pos1 = service.getBeatPosition(2, 0);
           const posX = service.getBeatPosition(3, 0);
-          service.getLineIntersection['and'].returnValue(new SVG.Point(300, pos1.y));
+          service.getLineIntersection['and'].returnValue({ x: 300, y: pos1.y });
 
           service.drawThrowLine(drawSpy, id, throwObj, 2, arrowMarker, borderEast, borderWest);
 
@@ -638,7 +653,7 @@ describe('DiagramService', () => {
           throwObj.targetJuggler = 0;
           const pos1 = service.getBeatPosition(2, 1);
           const posX = service.getBeatPosition(3, 0);
-          service.getLineIntersection['and'].returnValue(new SVG.Point(300, 137.5));
+          service.getLineIntersection['and'].returnValue({ x: 300, y: 137.5 });
 
 
           service.drawThrowLine(drawSpy, id, throwObj, 2, arrowMarker, borderEast, borderWest);
@@ -672,7 +687,7 @@ describe('DiagramService', () => {
           throwObj.targetJuggler = 1;
           const pos1 = service.getBeatPosition(2, 0);
           const posX = service.getBeatPosition(3, 1);
-          service.getLineIntersection['and'].returnValue(new SVG.Point(300, 137.5));
+          service.getLineIntersection['and'].returnValue({ x: 300, y: 137.5 });
 
 
           service.drawThrowLine(drawSpy, id, throwObj, 2, arrowMarker, borderEast, borderWest);
@@ -806,7 +821,7 @@ describe('DiagramService', () => {
             const posX = service.getBeatPosition(3, 0);
             service.getLineIntersection['and'].callFake((path, border) => {
               if (border.id === 'east') {
-                return new SVG.Point(300, 29.910105658160088);
+                return { x: 300, y: 29.910105658160088 };
               } else {
                 return null;
               }
@@ -864,7 +879,7 @@ describe('DiagramService', () => {
             const posX = service.getBeatPosition(-1, 0);
             service.getLineIntersection['and'].callFake((path, border) => {
               if (border.id === 'west') {
-                return new SVG.Point(0, 120.08989069607223);
+                return {x: 0, y: 120.08989069607223};
               } else {
                 return null;
               }
@@ -915,7 +930,7 @@ describe('DiagramService', () => {
 
 
     beforeEach(() => {
-      intersectionPoint = new SVG.Point(3, 4);
+      intersectionPoint = {x: 3, y: 4};
       lineOrPath = {
         id: 'lineOrPath',
         intersectsLine: jasmine.createSpy().and.returnValue(intersectionPoint)
@@ -940,9 +955,14 @@ describe('DiagramService', () => {
       expect(retVal).toEqual(intersectionPoint);
     });
     it('should return the first point single point if there are multiple points', () => {
-      lineOrPath.intersectsLine.and.returnValue([intersectionPoint, new SVG.Point(7, 8)]);
+      lineOrPath.intersectsLine.and.returnValue([intersectionPoint, {x: 7, y: 8}]);
       const retVal = service.getLineIntersection(lineOrPath, line);
       expect(retVal).toEqual(intersectionPoint);
+    });
+    it('should return null if there 0 points', () => {
+      lineOrPath.intersectsLine.and.returnValue([]);
+      const retVal = service.getLineIntersection(lineOrPath, line);
+      expect(retVal).toEqual(null);
     });
   });
 });
