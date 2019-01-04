@@ -30,4 +30,21 @@ export class NavbarComponent {
     this.diagramService.drawSVG();
   }
 
+  downloadPattern(): void {
+    const currentPattern = this.patternService.selectedPattern;
+    if (currentPattern != null) {
+      const fileName =  currentPattern.name+".json";
+      const patternAsJson = JSON.stringify(currentPattern, null, 2);
+      const uri = "data:application/json,"+encodeURIComponent(patternAsJson);
+      
+      //do the download
+      const link = document.createElement("a");
+      link.download = fileName;
+      link.href = uri;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
 }

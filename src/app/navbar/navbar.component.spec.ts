@@ -39,4 +39,33 @@ describe('NavbarComponent', () => {
       expect(diagramService.drawSVG).toHaveBeenCalled();
     });
   });
+
+  describe('download', () => {
+    let link: any;
+    let patternAsURI: string;
+    beforeEach(() => {
+      patternService.selectedPattern = myPattern;
+      link = {
+        click: jasmine.createSpy()
+      };
+      spyOn(document, 'createElement').and.returnValue(link);
+      spyOn(document.body, 'appendChild');
+      spyOn(document.body, 'removeChild');
+      patternAsURI = 
+      "data:application/json,"+encodeURIComponent(JSON.stringify(myPattern, null, 2));
+
+    });
+
+    it('should create & click a download link', () => {
+      component.downloadPattern();
+      expect(document.createElement).toHaveBeenCalledWith('a');
+      expect(link.download).toEqual(myPattern.name+'.json');
+      expect(link.href).toEqual(patternAsURI);
+      expect(document.body.appendChild).toHaveBeenCalledWith(link);
+      expect(link.click).toHaveBeenCalled();
+      expect(document.body.removeChild).toHaveBeenCalledWith(link);
+    });
+    
+
+  });
 });
