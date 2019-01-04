@@ -33,10 +33,10 @@ export class NavbarComponent {
   downloadPattern(): void {
     const currentPattern = this.patternService.selectedPattern;
     if (currentPattern != null) {
-      const fileName =  currentPattern.name+".json";
+      const fileName = currentPattern.name + ".json";
       const patternAsJson = JSON.stringify(currentPattern, null, 2);
-      const uri = "data:application/json,"+encodeURIComponent(patternAsJson);
-      
+      const uri = "data:application/json," + encodeURIComponent(patternAsJson);
+
       //do the download
       const link = document.createElement("a");
       link.download = fileName;
@@ -44,6 +44,25 @@ export class NavbarComponent {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+  }
+
+  uploadPattern(event): void {
+    const fileList = event.target.files;
+    const patternService = this.patternService;
+    const diagramService = this.diagramService;
+    if (fileList.length > 0 && fileList[0] != null) {
+
+      var reader = new FileReader();
+      reader.onload = () => {
+        const text = reader.result as string;
+        const newPattern = JSON.parse(text) as Pattern;
+        patternService.selectedPattern = newPattern;
+        diagramService.drawSVG();
+        patternService.addPattern(newPattern);
+      };
+
+      reader.readAsText(fileList[0]);
     }
   }
 

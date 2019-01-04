@@ -44,4 +44,27 @@ describe('PatternService', () => {
       expect(count).toEqual(9);
     });
   });
+
+  describe('addPattern', () => {
+    beforeEach(() => {
+      service.patterns = [
+        fourCount as Pattern
+      ];
+    });
+    it('should add a new pattern', () => {
+      const newPattern = <Pattern>TenClubThreeCountTriangle;
+      service.addPattern(newPattern);
+      expect(service.patterns.length).toEqual(2);
+      expect(service.patterns[1]).toEqual(newPattern);
+    });
+    
+    it('should replace an existing pattern', () => {
+      service.patterns.push(feed as Pattern);
+      const newPattern = <Pattern>TenClubThreeCountTriangle;
+      newPattern.name = feed.name;
+      service.addPattern(newPattern);
+      expect(service.patterns.length).toEqual(2);
+      expect(service.patterns[1]).toEqual(newPattern);
+    });
+  });
 });

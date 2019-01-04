@@ -17,7 +17,8 @@ describe('DiagramService', () => {
     patternService = {
       patterns: [],
       selectedPattern: fourCount as Pattern,
-      clubCount: jasmine.createSpy()
+      clubCount: jasmine.createSpy(),
+      addPattern: jasmine.createSpy()
     };
     service = new DiagramService(patternService);
   });

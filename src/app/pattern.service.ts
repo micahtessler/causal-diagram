@@ -36,7 +36,7 @@ export class PatternService {
     threeCount,
     threeCountWith441,
     TriangleThing,
-  ]
+  ] as Array<Pattern>
 
   public selectedPattern: Pattern = null;
 
@@ -52,5 +52,17 @@ export class PatternService {
     }
     const clubCount = runningTotal / (pattern.beats.length);
     return clubCount;
+  }
+
+  public addPattern(newPattern: Pattern): void {
+    const idx = this.patterns.findIndex((pattern) => {
+      return pattern.name === newPattern.name
+    });
+    if (idx >= 0) {
+      this.patterns[idx] = newPattern;
+    } else {
+      this.patterns.push(newPattern);
+    }
+    
   }
 }

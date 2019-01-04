@@ -9,8 +9,11 @@
       <mat-menu #patternMenu="matMenu">
           <button (click)="selectPattern(pattern)" *ngFor="let pattern of patternService.patterns" mat-menu-item>{{pattern.name}}</button>
         </mat-menu>
-
-      <a mat-list-item href="#">Upload Pattern</a>
+      
+      <!--<a mat-list-item href="#">Upload Pattern</a>-->
+      <a mat-list-item (click)="patternFileInput.click()">Upload Pattern</a> 
+      <input [hidden]=true type="file" #patternFileInput (change)="uploadPattern($event)" accept="application/json"/>
+      
       <a mat-list-item (click)="downloadPattern()">Download Pattern</a>
     </mat-nav-list>
   </mat-sidenav>
