@@ -7,7 +7,23 @@ import { Throw } from './model/Throw';
 import { tick } from '@angular/core/src/render3';
 
 
-describe('DiagramService', () => {   
+function getOtherHand(hand: string): string {
+  if (hand === 'R') {
+    return 'L';
+  } else {
+    return 'R';
+  }
+}
+
+function getTextXOffset(hand: string): number {
+  if (hand === 'R') {
+    return 12;
+  } else {
+    return 10;
+  }
+}
+
+describe('DiagramService', () => {
   let service: DiagramService;
   let patternService: PatternService;
   let div: HTMLDivElement;
@@ -29,13 +45,13 @@ describe('DiagramService', () => {
   });
 
   describe('divObs', () => {
-    it("should set the div and draw the SVG", () => {
+    it('should set the div and draw the SVG', () => {
       spyOn(service, 'drawSVG');
-      let div = document.createElement('div');
-      div.setAttribute('id', 'foobar');
-      service.divObs.observers[0].next(div);
+      const newDiv = document.createElement('div');
+      newDiv.setAttribute('id', 'foobar');
+      service.divObs.observers[0].next(newDiv);
     });
-  })
+  });
 
   describe('beatDiff', function () {
     let throwObj: Throw;
@@ -66,25 +82,25 @@ describe('DiagramService', () => {
           beats: []
         };
         for (let i = 0; i < totalBeats; i++) {
-          let beat = {
+          const beat = {
             throws: []
           };
           pattern.beats.push(beat);
           for (let j = 0; j < totalJugglers; j++) {
-            let throwObj = {
+            const thr = {
               sourceJuggler: j,
               sourceHand: 'R',
               targetJuggler: j,
               throwHeight: 3
             };
-            beat.throws.push(throwObj);
+            beat.throws.push(thr);
           }
         }
         patternService.selectedPattern = pattern;
 
-        //clear the page...
+        // clear the page...
         div = document.createElement('div');
-        //service.div = div;
+        // service.div = div;
         service.divObs.next(div);
         service.divObs.toPromise();
 
@@ -101,10 +117,10 @@ describe('DiagramService', () => {
       it('should draw the diagram correctly', function () {
         draw = service.drawSVG();
 
-        let mySvg = div.firstChild as SVGElement;
+        const mySvg = div.firstChild as SVGElement;
 
-        let viewWidth = service.BEAT_WIDTH * totalBeats;
-        let viewHeight = service.BEAT_HEIGHT * (totalJugglers + 1);
+        const viewWidth = service.BEAT_WIDTH * totalBeats;
+        const viewHeight = service.BEAT_HEIGHT * (totalJugglers + 1);
 
         expect(mySvg.getAttribute('viewBox')).toEqual('0 0 ' + viewWidth + ' ' + viewHeight);
 
@@ -112,7 +128,8 @@ describe('DiagramService', () => {
         for (let i = 0; i < totalBeats; i++) {
           expect(service.drawCircles['calls'].argsFor(i)).toEqual(
             [
-              draw, i, pattern.beats[i].throws
+              draw, i, pattern.beats[i].throws,
+              { id: 'fooArrow' }
             ]
           );
 
@@ -134,7 +151,7 @@ describe('DiagramService', () => {
     it('should calculate beat diff', function () {
       for (let i = 0; i < 20; i++) {
         throwObj.throwHeight = i;
-        let diff = service.getBeatDiff(throwObj);
+        const diff = service.getBeatDiff(throwObj);
         expect(diff).toEqual(i - 2);
       }
     });
@@ -142,111 +159,164 @@ describe('DiagramService', () => {
 
   describe('getBeatPosition', () => {
     let circle_corner_adj;
+    let zip_corner_adj;
     let totalBeats;
     let totalJugglers;
     beforeEach(function () {
       totalBeats = 20;
       totalJugglers = 20;
       circle_corner_adj = (Math.round((Math.cos(service.CIRCLE_CORNER_ANGLE) * service.CIRCLE_RADIUS) * 100) / 100);
+      zip_corner_adj = (Math.round((Math.cos(service.CIRCLE_CORNER_ANGLE) * service.ZIP_RADIUS) * 100) / 100);
     });
     it('should calculate beat position', () => {
       for (let beat = 0; beat < 20; beat++) {
         for (let juggler = 0; juggler < 20; juggler++) {
-          let pos = service.getBeatPosition(beat, juggler);
+          const pos = service.getBeatPosition(beat, juggler);
           expect(pos.x).toEqual(beat * 100 + 50);
           expect(pos.y).toEqual(juggler * 125 + 75);
         }
       }
     });
 
+    it('should calculate zip receive position', () => {
+      for (let beat = 0; beat < 20; beat++) {
+        for (let juggler = 0; juggler < 20; juggler++) {
+          const pos = service.getZipReceivePosition(beat, juggler);
+          expect(pos.x).toEqual(beat * 100 + 50 - service.ZIP_X_OFFSET);
+          expect(pos.y).toEqual(juggler * 125 + 75 -  service.ZIP_Y_OFFSET);
+        }
+      }
+    });
+
+    it('should calculate zip throw position', () => {
+      for (let beat = 0; beat < 20; beat++) {
+        for (let juggler = 0; juggler < 20; juggler++) {
+          const pos = service.getZipThrowPosition(beat, juggler);
+          expect(pos.x).toEqual(beat * 100 + 50 + service.ZIP_X_OFFSET);
+          expect(pos.y).toEqual(juggler * 125 + 75 +  service.ZIP_Y_OFFSET);
+        }
+      }
+    });
+
     describe('Circle edge positions', () => {
       it('should  calculate upper left', function () {
-        for (let beat = 0; beat < totalBeats; beat++) {
-          for (let juggler = 0; juggler < totalJugglers; juggler++) {
-            let pos = service.getBeatPosition(beat, juggler);
-            let posX = service.getCircleUpperLeft(pos);
+        const beat = 7;
+        const juggler = 5;
 
-            expect(posX.x).toEqual(beat * 100 + 50 - circle_corner_adj);
-            expect(posX.y).toEqual(juggler * 125 + 75 - circle_corner_adj);
-          }
-        }
+        let pos = service.getBeatPosition(beat, juggler);
+        let posX = service.getCircleUpperLeft(pos);
+        expect(posX.x).toEqual(beat * 100 + 50 - circle_corner_adj);
+        expect(posX.y).toEqual(juggler * 125 + 75 - circle_corner_adj);
+
+        pos = service.getBeatPosition(beat, juggler);
+        posX = service.getCircleUpperLeft(pos, service.ZIP_RADIUS);
+        expect(posX.x).toEqual(beat * 100 + 50 - zip_corner_adj);
+        expect(posX.y).toEqual(juggler * 125 + 75 - zip_corner_adj);
       });
 
       it('should  calculate upper right', function () {
-        for (let beat = 0; beat < totalBeats; beat++) {
-          for (let juggler = 0; juggler < totalJugglers; juggler++) {
-            let pos = service.getBeatPosition(beat, juggler);
-            let posX = service.getCircleUpperRight(pos);
-            expect(posX.x).toEqual(beat * 100 + 50 + circle_corner_adj);
-            expect(posX.y).toEqual(juggler * 125 + 75 - circle_corner_adj);
-          }
-        }
+        const beat = 7;
+        const juggler = 5;
+
+        let pos = service.getBeatPosition(beat, juggler);
+        let posX = service.getCircleUpperRight(pos);
+        expect(posX.x).toEqual(beat * 100 + 50 + circle_corner_adj);
+        expect(posX.y).toEqual(juggler * 125 + 75 - circle_corner_adj);
+
+        pos = service.getBeatPosition(beat, juggler);
+        posX = service.getCircleUpperRight(pos, service.ZIP_RADIUS);
+        expect(posX.x).toEqual(beat * 100 + 50 + zip_corner_adj);
+        expect(posX.y).toEqual(juggler * 125 + 75 - zip_corner_adj);
       });
 
       it('should  calculate lower left', function () {
-        for (let beat = 0; beat < totalBeats; beat++) {
-          for (let juggler = 0; juggler < totalJugglers; juggler++) {
-            let pos = service.getBeatPosition(beat, juggler);
-            let posX = service.getCircleLowerLeft(pos);
-            expect(posX.x).toEqual(beat * 100 + 50 - circle_corner_adj);
-            expect(posX.y).toEqual(juggler * 125 + 75 + circle_corner_adj);
-          }
-        }
+        const beat = 7;
+        const juggler = 5;
+
+        let pos = service.getBeatPosition(beat, juggler);
+        let posX = service.getCircleLowerLeft(pos);
+        expect(posX.x).toEqual(beat * 100 + 50 - circle_corner_adj);
+        expect(posX.y).toEqual(juggler * 125 + 75 + circle_corner_adj);
+
+        pos = service.getBeatPosition(beat, juggler);
+        posX = service.getCircleLowerLeft(pos, service.ZIP_RADIUS);
+        expect(posX.x).toEqual(beat * 100 + 50 - zip_corner_adj);
+        expect(posX.y).toEqual(juggler * 125 + 75 + zip_corner_adj);
       });
 
       it('should  calculate lower right', function () {
-        for (let beat = 0; beat < totalBeats; beat++) {
-          for (let juggler = 0; juggler < totalJugglers; juggler++) {
-            let pos = service.getBeatPosition(beat, juggler);
-            let posX = service.getCircleLowerRight(pos);
-            expect(posX.x).toEqual(beat * 100 + 50 + circle_corner_adj);
-            expect(posX.y).toEqual(juggler * 125 + 75 + circle_corner_adj);
-          }
-        }
+        const beat = 7;
+        const juggler = 5;
+
+        let pos = service.getBeatPosition(beat, juggler);
+        let posX = service.getCircleLowerRight(pos);
+        expect(posX.x).toEqual(beat * 100 + 50 + circle_corner_adj);
+        expect(posX.y).toEqual(juggler * 125 + 75 + circle_corner_adj);
+
+        pos = service.getBeatPosition(beat, juggler);
+        posX = service.getCircleLowerRight(pos, service.ZIP_RADIUS);
+        expect(posX.x).toEqual(beat * 100 + 50 + zip_corner_adj);
+        expect(posX.y).toEqual(juggler * 125 + 75 + zip_corner_adj);
       });
 
       it('should  calculate right', function () {
-        for (let beat = 0; beat < totalBeats; beat++) {
-          for (let juggler = 0; juggler < totalJugglers; juggler++) {
-            let pos = service.getBeatPosition(beat, juggler);
-            let posX = service.getCircleRight(pos);
-            expect(posX.x).toEqual(beat * 100 + 50 + service.CIRCLE_RADIUS);
-            expect(posX.y).toEqual(juggler * 125 + 75);
-          }
-        }
+        const beat = 7;
+        const juggler = 5;
+
+        let pos = service.getBeatPosition(beat, juggler);
+        let posX = service.getCircleRight(pos);
+        expect(posX.x).toEqual(beat * 100 + 50 + service.CIRCLE_RADIUS);
+        expect(posX.y).toEqual(juggler * 125 + 75);
+
+        pos = service.getBeatPosition(beat, juggler);
+        posX = service.getCircleRight(pos, service.ZIP_RADIUS);
+        expect(posX.x).toEqual(beat * 100 + 50 + service.ZIP_RADIUS);
+        expect(posX.y).toEqual(juggler * 125 + 75);
       });
 
       it('should  calculate left', function () {
-        for (let beat = 0; beat < totalBeats; beat++) {
-          for (let juggler = 0; juggler < totalJugglers; juggler++) {
-            let pos = service.getBeatPosition(beat, juggler);
-            let posX = service.getCircleLeft(pos);
-            expect(posX.x).toEqual(beat * 100 + 50 - service.CIRCLE_RADIUS);
-            expect(posX.y).toEqual(juggler * 125 + 75);
-          }
-        }
+        const beat = 7;
+        const juggler = 5;
+
+        let pos = service.getBeatPosition(beat, juggler);
+        let posX = service.getCircleLeft(pos);
+        expect(posX.x).toEqual(beat * 100 + 50 - service.CIRCLE_RADIUS);
+        expect(posX.y).toEqual(juggler * 125 + 75);
+
+        pos = service.getBeatPosition(beat, juggler);
+        posX = service.getCircleLeft(pos, service.ZIP_RADIUS);
+        expect(posX.x).toEqual(beat * 100 + 50 - service.ZIP_RADIUS);
+        expect(posX.y).toEqual(juggler * 125 + 75);
       });
 
       it('should  calculate top ', function () {
-        for (let beat = 0; beat < totalBeats; beat++) {
-          for (let juggler = 0; juggler < totalJugglers; juggler++) {
-            let pos = service.getBeatPosition(beat, juggler);
-            let posX = service.getCircleTop(pos);
-            expect(posX.x).toEqual(beat * 100 + 50);
-            expect(posX.y).toEqual(juggler * 125 + 75 - service.CIRCLE_RADIUS);
-          }
-        }
+        const beat = 7;
+        const juggler = 5;
+
+        let pos = service.getBeatPosition(beat, juggler);
+        let posX = service.getCircleTop(pos);
+        expect(posX.x).toEqual(beat * 100 + 50);
+        expect(posX.y).toEqual(juggler * 125 + 75 - service.CIRCLE_RADIUS);
+
+        pos = service.getBeatPosition(beat, juggler);
+        posX = service.getCircleTop(pos, service.ZIP_RADIUS);
+        expect(posX.x).toEqual(beat * 100 + 50);
+        expect(posX.y).toEqual(juggler * 125 + 75 - service.ZIP_RADIUS);
       });
 
       it('should  calculate bottom ', function () {
-        for (let beat = 0; beat < totalBeats; beat++) {
-          for (let juggler = 0; juggler < totalJugglers; juggler++) {
-            let pos = service.getBeatPosition(beat, juggler);
-            let posX = service.getCircleBottom(pos);
-            expect(posX.x).toEqual(beat * 100 + 50);
-            expect(posX.y).toEqual(juggler * 125 + 75 + service.CIRCLE_RADIUS);
-          }
-        }
+        const beat = 7;
+        const juggler = 5;
+
+        let pos = service.getBeatPosition(beat, juggler);
+        let posX = service.getCircleBottom(pos);
+        expect(posX.x).toEqual(beat * 100 + 50);
+        expect(posX.y).toEqual(juggler * 125 + 75 + service.CIRCLE_RADIUS);
+
+        pos = service.getBeatPosition(beat, juggler);
+        posX = service.getCircleBottom(pos, service.ZIP_RADIUS);
+        expect(posX.x).toEqual(beat * 100 + 50);
+        expect(posX.y).toEqual(juggler * 125 + 75 + service.ZIP_RADIUS);
       });
     });
   });
@@ -258,6 +328,7 @@ describe('DiagramService', () => {
     let drawSpy;
     let circleSpy;
     let textSpy;
+    let lineSpy;
     beforeEach(function () {
       totalBeats = 3;
       totalJugglers = 3;
@@ -265,7 +336,7 @@ describe('DiagramService', () => {
       for (let i = 0; i < totalJugglers; i++) {
         const throwObj = {
           sourceJuggler: i,
-          sourceHand: (i % 2 == 0) ? 'R' : 'L',
+          sourceHand: (i % 2 === 0) ? 'R' : 'L',
           targetJuggler: i,
           throwHeight: 3
         };
@@ -274,8 +345,10 @@ describe('DiagramService', () => {
       drawSpy = {};
       circleSpy = {};
       textSpy = {};
+      lineSpy = {};
       drawSpy.circle = jasmine.createSpy().and.returnValue(circleSpy);
       drawSpy.text = jasmine.createSpy().and.returnValue(textSpy);
+      drawSpy.line = jasmine.createSpy().and.returnValue(lineSpy);
       circleSpy.radius = jasmine.createSpy();
       circleSpy.cx = jasmine.createSpy();
       circleSpy.cy = jasmine.createSpy();
@@ -286,11 +359,13 @@ describe('DiagramService', () => {
       textSpy.id = jasmine.createSpy();
       textSpy.addClass = jasmine.createSpy();
       textSpy.font = jasmine.createSpy();
+      lineSpy.addClass = jasmine.createSpy();
+      lineSpy.marker = jasmine.createSpy();
     });
 
     it('shouldDrawCirlesCorrectly', function () {
       for (let beat = 0; beat < totalBeats; beat++) {
-        service.drawCircles(drawSpy, beat, throws);
+        service.drawCircles(drawSpy, beat, throws, {});
       }
       expect(drawSpy.circle.calls.count()).toEqual(totalBeats * totalJugglers);
       for (let beat = 0; beat < totalBeats; beat++) {
@@ -313,7 +388,7 @@ describe('DiagramService', () => {
 
     it('shouldDrawTextCorrectly', function () {
       for (let beat = 0; beat < totalBeats; beat++) {
-        service.drawCircles(drawSpy, beat, throws);
+        service.drawCircles(drawSpy, beat, throws, {});
       }
       expect(drawSpy.text.calls.count()).toEqual(totalBeats * totalJugglers);
 
@@ -323,7 +398,7 @@ describe('DiagramService', () => {
           expect(drawSpy.text.calls.argsFor(beat * totalJugglers + juggler)).
             toEqual([throws[juggler].sourceHand]);
           expect(textSpy.x.calls.argsFor(beat * totalJugglers + juggler)).
-            toEqual([pos.x - 10]);
+            toEqual([pos.x - getTextXOffset(throws[juggler].sourceHand)]);
           expect(textSpy.y.calls.argsFor(beat * totalJugglers + juggler)).
             toEqual([pos.y - 30]);
           expect(textSpy.id.calls.argsFor(beat * totalJugglers + juggler)).
@@ -340,6 +415,95 @@ describe('DiagramService', () => {
       }
     });
 
+    it('should draw zip circles correcly', () => {
+      for (let i = 0; i < throws.length; i++) {
+        throws[i].zip = true;
+      }
+      const beat = 4;
+      const arrowMarker = { id: 'arrow' };
+      service.drawCircles(drawSpy, beat, throws, arrowMarker);
+      expect(drawSpy.circle.calls.count()).toEqual(throws.length * 2);
+      expect(drawSpy.line.calls.count()).toEqual(throws.length);
+      for (let juggler = 0; juggler < throws.length; juggler++) {
+        const pos = service.getBeatPosition(beat, juggler);
+        // top (receiving circle on zip)
+        expect(circleSpy.radius.calls.argsFor(2 * juggler)).
+          toEqual([service.ZIP_RADIUS]);
+        expect(circleSpy.cx.calls.argsFor(2 * juggler)).
+          toEqual([pos.x - service.ZIP_X_OFFSET]);
+        expect(circleSpy.cy.calls.argsFor(2 * juggler)).
+          toEqual([pos.y - service.ZIP_Y_OFFSET]);
+        expect(circleSpy.id.calls.argsFor(2 * juggler)).
+          toEqual(['causal_beat_' + beat + '_juggler_' + juggler + '_0']);
+        expect(circleSpy.addClass.calls.argsFor(2 * juggler)).
+          toEqual(['causal_beat_circle']);
+        // bottom (throwing circle on zip)
+        expect(circleSpy.radius.calls.argsFor(2 * juggler + 1)).
+          toEqual([service.ZIP_RADIUS]);
+        expect(circleSpy.cx.calls.argsFor(2 * juggler + 1)).
+          toEqual([pos.x + service.ZIP_X_OFFSET]);
+        expect(circleSpy.cy.calls.argsFor(2 * juggler + 1)).
+          toEqual([pos.y + service.ZIP_Y_OFFSET]);
+        expect(circleSpy.id.calls.argsFor(2 * juggler + 1)).
+          toEqual(['causal_beat_' + beat + '_juggler_' + juggler + '_1']);
+        expect(circleSpy.addClass.calls.argsFor(2 * juggler + 1)).
+          toEqual(['causal_beat_circle']);
+
+        expect(drawSpy.line.calls.argsFor(juggler)).
+          toEqual([pos.x - service.ZIP_X_OFFSET + service.ZIP_CIRCLE_CORNER_X,
+          pos.y - service.ZIP_Y_OFFSET + service.ZIP_CIRCLE_CORNER_Y,
+          pos.x + service.ZIP_X_OFFSET - service.ZIP_CIRCLE_CORNER_X,
+          pos.y + service.ZIP_Y_OFFSET - service.ZIP_CIRCLE_CORNER_Y]);
+          expect(lineSpy.addClass.calls.argsFor(juggler)).toEqual(['causal_pass_line']);
+          expect(lineSpy.marker.calls.argsFor(juggler)).toEqual(['end', arrowMarker]);
+      }
+
+    });
+
+    it('shouldZipDrawTextCorrectly', function () {
+      for (let i = 0; i < throws.length; i++) {
+        throws[i].zip = true;
+      }
+      const beat = 4;
+      service.drawCircles(drawSpy, beat, throws, {});
+
+      expect(drawSpy.text.calls.count()).toEqual(throws.length * 2);
+
+      for (let juggler = 0; juggler < throws.length; juggler++) {
+        const pos = service.getBeatPosition(beat, juggler);
+        expect(drawSpy.text.calls.argsFor(2 * juggler)).
+          toEqual([getOtherHand(throws[juggler].sourceHand)]);
+        expect(textSpy.x.calls.argsFor(2 * juggler)).
+          toEqual([pos.x - service.ZIP_X_OFFSET - getTextXOffset(getOtherHand(throws[juggler].sourceHand))]);
+        expect(textSpy.y.calls.argsFor(2 * juggler)).
+          toEqual([pos.y - service.ZIP_Y_OFFSET - 30]);
+        expect(textSpy.id.calls.argsFor(2 * juggler)).
+          toEqual(['causal_beat_label_' + beat + '_juggler_' + juggler + '_0']);
+        expect(textSpy.addClass.calls.argsFor(2 * juggler)).
+          toEqual(['causal_beat_label']);
+        expect(textSpy.font.calls.argsFor(2 * juggler)).
+          toEqual([{
+            family: 'sans-serif'
+            , size: '35'
+          }]);
+        expect(drawSpy.text.calls.argsFor(2 * juggler + 1)).
+          toEqual([throws[juggler].sourceHand]);
+        expect(textSpy.x.calls.argsFor(2 * juggler + 1)).
+          toEqual([pos.x + service.ZIP_X_OFFSET - getTextXOffset(throws[juggler].sourceHand)]);
+        expect(textSpy.y.calls.argsFor(2 * juggler + 1)).
+          toEqual([pos.y + service.ZIP_Y_OFFSET - 30]);
+        expect(textSpy.id.calls.argsFor(2 * juggler + 1)).
+          toEqual(['causal_beat_label_' + beat + '_juggler_' + juggler + '_1']);
+        expect(textSpy.addClass.calls.argsFor(2 * juggler + 1)).
+          toEqual(['causal_beat_label']);
+        expect(textSpy.font.calls.argsFor(2 * juggler + 1)).
+          toEqual([{
+            family: 'sans-serif'
+            , size: '35'
+          }]);
+      }
+    });
+
   });
 
   describe('drawThrows', () => {
@@ -351,7 +515,7 @@ describe('DiagramService', () => {
       spyOn(service, 'drawThrowLine');
       spyOn(service, 'drawSelfCurve');
       spyOn(service, 'isLineInDiagram').and.callFake((throwObj) => {
-        return throwObj.sourceJuggler != throwObj.targetJuggler;
+        return throwObj.sourceJuggler !== throwObj.targetJuggler;
       });
 
       arrowMarker = {
@@ -371,7 +535,7 @@ describe('DiagramService', () => {
       for (let i = 0; i < 3; i++) {
         const throwObj = {
           sourceJuggler: i,
-          sourceHand: (i % 2 == 0) ? 'R' : 'L',
+          sourceHand: (i % 2 === 0) ? 'R' : 'L',
           targetJuggler: i,
           throwHeight: 3
         };
@@ -402,16 +566,16 @@ describe('DiagramService', () => {
       arrowSpy = {
         ref: jasmine.createSpy(),
         id: jasmine.createSpy()
-      }
+      };
       defsSpy = {
         marker: jasmine.createSpy().and.returnValue(arrowSpy)
       };
       pathSpy = {
         addClass: jasmine.createSpy()
-      }
+      };
       addSpy = {
         path: jasmine.createSpy().and.returnValue(pathSpy)
-      }
+      };
     });
 
     it('should create the arrow', () => {
@@ -430,7 +594,7 @@ describe('DiagramService', () => {
     });
   });
   describe('draw throws', function () {
-    let throws;
+
     let totalBeats;
     let totalJugglers;
     let throwObj;
@@ -482,7 +646,7 @@ describe('DiagramService', () => {
         linesCount: 0,
         pathsCount: 0,
         line: jasmine.createSpy().and.callFake(() => {
-          if (drawSpy.linesCount == 0) {
+          if (drawSpy.linesCount === 0) {
             drawSpy.linesCount++;
             return lineSpy;
           } else {
@@ -491,7 +655,7 @@ describe('DiagramService', () => {
           }
         }),
         path: jasmine.createSpy().and.callFake(() => {
-          if (drawSpy.pathsCount == 0) {
+          if (drawSpy.pathsCount === 0) {
             drawSpy.pathsCount++;
             return pathSpy;
           } else {
@@ -607,13 +771,12 @@ describe('DiagramService', () => {
 
       describe('wrapping', function () {
         beforeEach(function () {
-          //3 beats wide
-          patternService.selectedPattern =
-            {
-              name: 'ignore',
-              jugglerCount: 2,
-              beats: [{ throws: [] }, { throws: [] }, { throws: [] }]
-            };
+          // 3 beats wide
+          patternService.selectedPattern = {
+            name: 'ignore',
+            jugglerCount: 2,
+            beats: [{ throws: [] }, { throws: [] }, { throws: [] }]
+          };
         });
         it('should split up straight throw', function () {
 
@@ -803,9 +966,8 @@ describe('DiagramService', () => {
       describe('wrapping', function () {
 
         beforeEach(function () {
-          //3 beats wide
-          patternService.selectedPattern =
-            {
+          // 3 beats wide
+          patternService.selectedPattern = {
               name: 'ignore',
               jugglerCount: 2,
               beats: [{ throws: [] }, { throws: [] }, { throws: [] }]
@@ -880,7 +1042,7 @@ describe('DiagramService', () => {
             const posX = service.getBeatPosition(-1, 0);
             service.getLineIntersection['and'].callFake((path, border) => {
               if (border.id === 'west') {
-                return {x: 0, y: 120.08989069607223};
+                return { x: 0, y: 120.08989069607223 };
               } else {
                 return null;
               }
@@ -931,7 +1093,7 @@ describe('DiagramService', () => {
 
 
     beforeEach(() => {
-      intersectionPoint = {x: 3, y: 4};
+      intersectionPoint = { x: 3, y: 4 };
       lineOrPath = {
         id: 'lineOrPath',
         intersectsLine: jasmine.createSpy().and.returnValue(intersectionPoint)
@@ -956,7 +1118,7 @@ describe('DiagramService', () => {
       expect(retVal).toEqual(intersectionPoint);
     });
     it('should return the first point single point if there are multiple points', () => {
-      lineOrPath.intersectsLine.and.returnValue([intersectionPoint, {x: 7, y: 8}]);
+      lineOrPath.intersectsLine.and.returnValue([intersectionPoint, { x: 7, y: 8 }]);
       const retVal = service.getLineIntersection(lineOrPath, line);
       expect(retVal).toEqual(intersectionPoint);
     });

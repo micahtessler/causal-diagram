@@ -21,7 +21,8 @@ export class NavbarComponent {
       map(result => result.matches)
     );
 
-  constructor(private breakpointObserver: BreakpointObserver, private patternService: PatternService, private diagramService: DiagramService) {
+  constructor(private breakpointObserver: BreakpointObserver, private patternService: PatternService,
+    private diagramService: DiagramService) {
 
   }
 
@@ -33,12 +34,12 @@ export class NavbarComponent {
   downloadPattern(): void {
     const currentPattern = this.patternService.selectedPattern;
     if (currentPattern != null) {
-      const fileName = currentPattern.name + ".json";
+      const fileName = currentPattern.name + '.json';
       const patternAsJson = JSON.stringify(currentPattern, null, 2);
-      const uri = "data:application/json," + encodeURIComponent(patternAsJson);
+      const uri = 'data:application/json,' + encodeURIComponent(patternAsJson);
 
-      //do the download
-      const link = document.createElement("a");
+      // do the download
+      const link = document.createElement('a');
       link.download = fileName;
       link.href = uri;
       document.body.appendChild(link);
@@ -53,7 +54,7 @@ export class NavbarComponent {
     const diagramService = this.diagramService;
     if (fileList.length > 0 && fileList[0] != null) {
 
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.onload = () => {
         const text = reader.result as string;
         const newPattern = JSON.parse(text) as Pattern;

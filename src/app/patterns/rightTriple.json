@@ -1,7 +1,6 @@
 {
 	"name" : "Right Triple",
 	"jugglerCount" : 2,
-	"beatCount" : 4,
 	"beats" : [
 		{
 			"throws": [

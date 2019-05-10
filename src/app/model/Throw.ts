@@ -3,4 +3,5 @@ export class Throw {
     sourceHand: 'R' | 'L';
     targetJuggler: number;
     throwHeight: number;
-};
+    zip?: boolean;
+}

@@ -1,7 +1,6 @@
 {
 	"name" : "Death From Above",
 	"jugglerCount" : 2,
-	"beatCount" : 6,
 	"beats" : [
 		{
 			"throws": [

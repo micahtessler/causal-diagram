@@ -1,7 +1,6 @@
 {
 	"name" : "Four Count Feed",
 	"jugglerCount" : 3,
-	"beatCount" : 6,
 	"beats" : [
 		{
 			"throws": [

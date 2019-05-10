@@ -1,7 +1,6 @@
 {
 	"name" : "Right Castle",
 	"jugglerCount" : 2,
-	"beatCount" : 4,
 	"beats" : [
 		{
 			"throws": [

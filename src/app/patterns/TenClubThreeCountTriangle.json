@@ -1,7 +1,6 @@
 {
 	"name" : "10 Club 3 Count Triangle",
 	"jugglerCount" : 3,
-	"beatCount" : 6,
 	"beats" : [
 		{
 			"throws": [

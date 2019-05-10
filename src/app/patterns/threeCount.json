@@ -1,7 +1,6 @@
 {
 	"name" : "Three Count",
 	"jugglerCount" : 2,
-	"beatCount" : 6,
 	"beats" : [
 		{
 			"throws": [
