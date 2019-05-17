@@ -9,7 +9,7 @@ import { DiagramService } from '../diagram.service';
 })
 export class DiagramCardComponent implements OnInit {
   
-  constructor(private patternService : PatternService) { }
+  constructor(public patternService : PatternService) { }
 
   ngOnInit() {
   }

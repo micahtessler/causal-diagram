@@ -21,7 +21,7 @@ export class NavbarComponent {
       map(result => result.matches)
     );
 
-  constructor(private breakpointObserver: BreakpointObserver, private patternService: PatternService,
+  constructor(private breakpointObserver: BreakpointObserver, public patternService: PatternService,
     private diagramService: DiagramService) {
 
   }
