@@ -16,6 +16,7 @@ import threeCount from './patterns/threeCount.json';
 import threeCountWith441 from './patterns/threeCountWith441.json';
 import TriangleThing from './patterns/TriangleThing.json';
 import mildMadness from './patterns/mildMadness.json';
+import martinsMadness from './patterns/martinsMadness.json';
 
 
 @Injectable({
@@ -38,7 +39,8 @@ export class PatternService {
     threeCount,
     threeCountWith441,
     TriangleThing,
-    mildMadness
+    mildMadness,
+    martinsMadness
 
   ] as Array<Pattern>;
 

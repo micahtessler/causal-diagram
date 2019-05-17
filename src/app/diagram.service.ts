@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Throw } from './model/Throw';
+import { Pattern } from './model/Pattern';
 import { PatternService } from './pattern.service';
 import { Position } from './model/Position';
 declare const SVG: any; // SVG inmported in angular.json
 import { Subject } from 'rxjs';
+
 
 @Injectable({
   providedIn: 'root'
@@ -85,7 +87,7 @@ export class DiagramService {
       this.drawCircles(draw, i, beat.throws, arrowMarker);
     });
     this.patternService.selectedPattern.beats.forEach((beat, i) => {
-      this.drawThrows(draw, i, beat.throws, arrowMarker, borderEast, borderWest);
+      this.drawThrows(draw, i, beat.throws, arrowMarker, borderEast, borderWest, this.patternService.selectedPattern);
     });
 
 
@@ -243,7 +245,7 @@ export class DiagramService {
     // create the bottom (receiving circle)
     const circleBottom = draw.circle();
     circleBottom.radius(this.ZIP_RADIUS);
-    circleBottom.cx(pos1.x );
+    circleBottom.cx(pos1.x);
     circleBottom.cy(pos1.y);
     circleBottom.id('causal_beat_' + beatNb + '_juggler_' + throwObj.sourceJuggler + '_1');
     circleBottom.addClass('causal_beat_circle');
@@ -266,19 +268,29 @@ export class DiagramService {
     line.marker('end', arrowMarker);
   }
 
-  drawThrows(draw, beatNb: number, throws: Array<Throw>, arrowMarker: any, borderEast, borderWest): void {
+  drawThrows(draw, beatNb: number, throws: Array<Throw>, arrowMarker: any, borderEast, borderWest, pattern: Pattern): void {
     for (let j = 0; j < throws.length; j++) {
       // TODO: need a better ID system for throws (multiplexes...)
       const id = 'throw_' + beatNb + '_' + throws[j].sourceJuggler;
-
+      const targetThrow = this.getTargetThrow(beatNb, throws[j], pattern);
       if (this.isLineInDiagram(throws[j])) {
-        this.drawThrowLine(draw, id, throws[j], beatNb, arrowMarker, borderEast, borderWest);
+        this.drawThrowLine(draw, id, throws[j], beatNb, arrowMarker, borderEast, borderWest, targetThrow);
       } else {
         // this is a curve for a self throw (not 1 or 3)
-        this.drawSelfCurve(draw, id, throws[j], beatNb, arrowMarker, borderEast, borderWest);
+        this.drawSelfCurve(draw, id, throws[j], beatNb, arrowMarker, borderEast, borderWest, targetThrow);
       }
     }
   }
+
+  getTargetThrow(startBeat: number, sourceThrow: Throw, pattern: Pattern): Throw {
+    let targetBeatNumber = (startBeat + sourceThrow.throwHeight - 2) % pattern.beats.length;
+
+    const targetBeat = pattern.beats[targetBeatNumber].throws.find((t) => {
+      return (t.sourceJuggler === sourceThrow.targetJuggler);
+    });
+    return targetBeat;
+  }
+
   initArrow(defs) {
     const arrowMarker = defs.marker(5, 5, function (add) {
       const path = add.path('M0,0 L0,3 L4.5,1.5 z');
@@ -298,8 +310,7 @@ export class DiagramService {
     }
   }
 
-  drawThrowLine(draw, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast, borderWest): void {
-    // TODO: Need to handle zip receptions...
+  drawThrowLine(draw, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast, borderWest, targetThrow: Throw): void {
     let beat1Pos = this.getBeatPosition(beatNb, throwObj.sourceJuggler);
     let beat1Radius = this.CIRCLE_RADIUS;
     if (throwObj.zip) {
@@ -309,7 +320,12 @@ export class DiagramService {
 
     const beatDiff = this.getBeatDiff(throwObj);
     const beat2Nb = beatNb + beatDiff;
-    const beat2Pos = this.getBeatPosition(beat2Nb, throwObj.targetJuggler);
+    let beat2Pos = this.getBeatPosition(beat2Nb, throwObj.targetJuggler);
+    let beat2Radius = this.CIRCLE_RADIUS;
+    if (targetThrow.zip) {
+      beat2Pos = this.getZipReceivePosition(beat2Nb, throwObj.targetJuggler);
+      beat2Radius = this.ZIP_RADIUS;
+    }
     let straightThrow = false;
     let upThrow = false;
     let startPos;
@@ -318,16 +334,16 @@ export class DiagramService {
     if (throwObj.sourceJuggler === throwObj.targetJuggler) {
       straightThrow = true;
       startPos = this.getCircleRight(beat1Pos, beat1Radius);
-      endPos = this.getCircleLeft(beat2Pos);
+      endPos = this.getCircleLeft(beat2Pos, beat2Radius);
     } else {
       // this must be a positive height
       if (throwObj.sourceJuggler > throwObj.targetJuggler) {
         upThrow = true;
         startPos = this.getCircleUpperRight(beat1Pos, beat1Radius);
-        endPos = this.getCircleLowerLeft(beat2Pos);
+        endPos = this.getCircleLowerLeft(beat2Pos, beat2Radius);
       } else {
         startPos = this.getCircleLowerRight(beat1Pos, beat1Radius);
-        endPos = this.getCircleUpperLeft(beat2Pos);
+        endPos = this.getCircleUpperLeft(beat2Pos, beat2Radius);
       }
     }
     const line = draw.line(startPos.x, startPos.y, endPos.x, endPos.y);
@@ -346,14 +362,17 @@ export class DiagramService {
 
       // create a new line starting from the edge of the screen.
       // Beat2Nb is negative, so add beats
-      const newBeat2Nb = beat2Nb % this.patternService.selectedPattern.beats.length;
-      const newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
+      const newBeat2Nb = beat2Nb % this.patternService.selectedPattern.beats.length
+      let newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
+      if (targetThrow.zip) {
+        newBeat2Pos = this.getZipReceivePosition(newBeat2Nb, throwObj.targetJuggler);
+      }
       if (straightThrow) {
-        endPos = this.getCircleLeft(newBeat2Pos);
+        endPos = this.getCircleLeft(newBeat2Pos, beat2Radius);
       } else if (upThrow) {
-        endPos = this.getCircleLowerLeft(newBeat2Pos);
+        endPos = this.getCircleLowerLeft(newBeat2Pos, beat2Radius);
       } else {
-        endPos = this.getCircleUpperLeft(newBeat2Pos);
+        endPos = this.getCircleUpperLeft(newBeat2Pos, beat2Radius);
       }
       const newId = id + '_A';
       const line2 = draw.line(0, intersectionPoint.y, endPos.x, endPos.y);
@@ -363,11 +382,21 @@ export class DiagramService {
     }
   }
 
-  drawSelfCurve(draw, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast, borderWest): void {
-    const beat1Pos = this.getBeatPosition(beatNb, throwObj.sourceJuggler);
+  drawSelfCurve(draw, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast, borderWest, targetThrow: Throw): void {
+    let beat1Pos = this.getBeatPosition(beatNb, throwObj.sourceJuggler);
+    let beat1Radius = this.CIRCLE_RADIUS;
+    if (throwObj.zip) {
+      beat1Pos = this.getZipThrowPosition(beatNb, throwObj.sourceJuggler);
+      beat1Radius = this.ZIP_RADIUS;      
+    }
     const beatDiff = this.getBeatDiff(throwObj);
     const beat2Nb = beatNb + beatDiff;
-    const beat2Pos = this.getBeatPosition(beat2Nb, throwObj.targetJuggler);
+    let beat2Pos = this.getBeatPosition(beat2Nb, throwObj.targetJuggler);
+    let beat2Radius = this.CIRCLE_RADIUS;
+    if (targetThrow .zip) {
+      beat2Pos = this.getZipReceivePosition(beat2Nb, throwObj.targetJuggler);
+      beat2Radius = this.ZIP_RADIUS; 
+    }
 
     let startPos;
     let endPos;
@@ -379,23 +408,23 @@ export class DiagramService {
 
     if (beatDiff === -2) {
       // backwards throw
-      startPos = this.getCircleLowerLeft(beat1Pos);
-      endPos = this.getCircleLowerRight(beat2Pos);
+      startPos = this.getCircleLowerLeft(beat1Pos, beat1Radius);
+      endPos = this.getCircleLowerRight(beat2Pos, beat2Radius);
       radiusX = 100;
       radiusY = 100;
     } else if (beatDiff === -1) {
-      startPos = this.getCircleBottom(beat1Pos);
-      endPos = this.getCircleBottom(beat2Pos);
+      startPos = this.getCircleBottom(beat1Pos, beat1Radius);
+      endPos = this.getCircleBottom(beat2Pos, beat2Radius);
       radiusX = 100;
       radiusY = 100;
     } else if (beatDiff === 0) {
-      startPos = this.getCircleUpperLeft(beat1Pos);
-      endPos = this.getCircleUpperRight(beat2Pos);
+      startPos = this.getCircleUpperLeft(beat1Pos, beat1Radius);
+      endPos = this.getCircleUpperRight(beat2Pos, beat2Radius);
       radiusX = 20;
       radiusY = 30;
-    } else {
-      startPos = this.getCircleUpperRight(beat1Pos);
-      endPos = this.getCircleUpperLeft(beat2Pos);
+    } else {  
+      startPos = this.getCircleUpperRight(beat1Pos, beat1Radius);
+      endPos = this.getCircleUpperLeft(beat2Pos, beat2Radius);
       radiusX = 100 * (beatDiff - 1);
       radiusY = 100 * (beatDiff - 1);
     }
@@ -419,9 +448,12 @@ export class DiagramService {
       path.plot(pathStr);
 
       const newBeat2Nb = beat2Nb % this.patternService.selectedPattern.beats.length;
-      const newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
+      let newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
+      if (targetThrow.zip) {
+        newBeat2Pos = this.getZipReceivePosition(newBeat2Nb, throwObj.targetJuggler);
+      }
       // has to be forwards
-      endPos = this.getCircleUpperLeft(newBeat2Pos);
+      endPos = this.getCircleUpperLeft(newBeat2Pos, beat2Radius);
       const newId = id + '_A';
       pathStr = 'm ' + 0 + ' ' + intersectionPoint.y + ' A ' + radiusX + ' ' +
         radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + endPos.x + ' ' + endPos.y;
@@ -435,7 +467,7 @@ export class DiagramService {
     intersectionPoint = this.getLineIntersection(path, borderWest);
 
     if (intersectionPoint != null) {
-      // wrapping around right diagram edge
+      // wrapping around left diagram edge
       // remove the marker
       path.marker('end', 0, 0, () => { });
 
@@ -448,9 +480,12 @@ export class DiagramService {
       while (newBeat2Nb < 0) {
         newBeat2Nb += this.patternService.selectedPattern.beats.length;
       }
-      const newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
+      let newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
+      if (targetThrow.zip) {
+        newBeat2Pos = this.getZipReceivePosition(newBeat2Nb, throwObj.targetJuggler);
+      }
       // has to be backwards
-      endPos = this.getCircleLowerRight(newBeat2Pos);
+      endPos = this.getCircleLowerRight(newBeat2Pos, beat2Radius);
       const newId = id + '_A';
       pathStr = 'm ' + this.diagramWidth + ' ' + intersectionPoint.y + ' A ' + radiusX + ' ' +
         radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + endPos.x + ' ' + endPos.y;
