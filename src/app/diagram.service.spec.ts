@@ -450,10 +450,10 @@ describe('DiagramService', () => {
           toEqual(['causal_beat_circle']);
 
         expect(drawSpy.line.calls.argsFor(juggler)).
-          toEqual([pos.x - service.ZIP_X_OFFSET + service.ZIP_CIRCLE_CORNER_X,
-          pos.y - service.ZIP_Y_OFFSET + service.ZIP_CIRCLE_CORNER_Y,
-          pos.x + service.ZIP_X_OFFSET - service.ZIP_CIRCLE_CORNER_X,
-          pos.y + service.ZIP_Y_OFFSET - service.ZIP_CIRCLE_CORNER_Y]);
+          toEqual([pos.x,
+          pos.y - service.ZIP_Y_OFFSET + service.ZIP_RADIUS,
+          pos.x,
+          pos.y + service.ZIP_Y_OFFSET - service.ZIP_RADIUS]);
         expect(lineSpy.addClass.calls.argsFor(juggler)).toEqual(['causal_pass_line']);
         expect(lineSpy.marker.calls.argsFor(juggler)).toEqual(['end', arrowMarker]);
       }

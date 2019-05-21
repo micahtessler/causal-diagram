@@ -15,8 +15,8 @@ export class DiagramService {
 
   readonly CIRCLE_RADIUS = 40;
   readonly ZIP_RADIUS = 20;
-  readonly ZIP_Y_OFFSET = 20;
-  readonly ZIP_X_OFFSET = 20;
+  readonly ZIP_Y_OFFSET = 30;
+  readonly ZIP_X_OFFSET = 0;
   readonly X_MARGIN = 50;
   readonly BEAT_WIDTH = 100;
   readonly Y_MARGIN = 75;
@@ -261,8 +261,8 @@ export class DiagramService {
     });
 
     // zip line between the circles
-    const startPos = this.getCircleLowerRight(pos0, this.ZIP_RADIUS);
-    const endPos = this.getCircleUpperLeft(pos1, this.ZIP_RADIUS);
+    const startPos = this.getCircleBottom(pos0, this.ZIP_RADIUS);
+    const endPos = this.getCircleTop(pos1, this.ZIP_RADIUS);
     const line = draw.line(startPos.x, startPos.y, endPos.x, endPos.y);
     line.addClass('causal_pass_line');
     line.marker('end', arrowMarker);
