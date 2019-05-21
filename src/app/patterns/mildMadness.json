@@ -71,38 +71,6 @@
             "throws": [
                 {
                     "sourceJuggler": 0,
-                    "sourceHand": "R",
-                    "targetJuggler": 1,
-                    "throwHeight": 3
-                },
-                {
-                    "sourceJuggler": 1,
-                    "sourceHand": "L",
-                    "targetJuggler": 0,
-                    "throwHeight": 3
-                }
-            ]
-        },
-        {
-            "throws": [
-                {
-                    "sourceJuggler": 0,
-                    "sourceHand": "R",
-                    "targetJuggler": 1,
-                    "throwHeight": 3
-                },
-                {
-                    "sourceJuggler": 1,
-                    "sourceHand": "L",
-                    "targetJuggler": 0,
-                    "throwHeight": 3
-                }
-            ]
-        },
-        {
-            "throws": [
-                {
-                    "sourceJuggler": 0,
                     "sourceHand": "L",
                     "targetJuggler": 1,
                     "throwHeight": 3
