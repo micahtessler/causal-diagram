@@ -14,6 +14,7 @@ import selfTriple from './patterns/selfTriple.json';
 import TenClubThreeCountTriangle from './patterns/TenClubThreeCountTriangle.json';
 import threeCount from './patterns/threeCount.json';
 import threeCountWith441 from './patterns/threeCountWith441.json';
+import threeCountFeedWith441 from './patterns/threeCountFeedWith441.json';
 import TriangleThing from './patterns/TriangleThing.json';
 import mildMadness from './patterns/mildMadness.json';
 import martinsMadness from './patterns/martinsMadness.json';
@@ -38,6 +39,7 @@ export class PatternService {
     TenClubThreeCountTriangle,
     threeCount,
     threeCountWith441,
+    threeCountFeedWith441,
     TriangleThing,
     mildMadness,
     martinsMadness
