@@ -4,6 +4,7 @@ import { PatternService } from './pattern.service';
 import fourCount from './patterns/fourCount.json';
 import { Pattern } from './model/Pattern';
 import { Throw } from './model/Throw';
+import { Beat } from './model/Beat';
 
 
 function getOtherHand(hand: string): string {
@@ -118,12 +119,14 @@ describe('DiagramService', () => {
 
         const mySvg = div.firstChild as SVGElement;
 
-        const viewWidth = service.BEAT_WIDTH * totalBeats;
+        const beatsToDraw = patternService.selectedPattern.beats.concat(patternService.selectedPattern.beats);
+
+        const viewWidth = service.BEAT_WIDTH * totalBeats * 2;
         const viewHeight = service.BEAT_HEIGHT * (totalJugglers + 1);
 
         expect(mySvg.getAttribute('viewBox')).toEqual('0 0 ' + viewWidth + ' ' + viewHeight);
 
-        expect(service.drawCircles['calls'].count()).toEqual(totalBeats);
+        expect(service.drawCircles['calls'].count()).toEqual(totalBeats*2);
         for (let i = 0; i < totalBeats; i++) {
           expect(service.drawCircles['calls'].argsFor(i)).toEqual(
             [
@@ -133,7 +136,7 @@ describe('DiagramService', () => {
           );
 
         }
-        expect(service.drawThrows['calls'].count()).toEqual(totalBeats);
+        expect(service.drawThrows['calls'].count()).toEqual(totalBeats*2);
         for (let i = 0; i < totalBeats; i++) {
           expect(service.drawThrows['calls'].argsFor(i).slice(0, 4)).toEqual(
             [
@@ -141,7 +144,7 @@ describe('DiagramService', () => {
               { id: 'fooArrow' }
             ]
           );
-          expect(service.drawThrows['calls'].argsFor(i)[6]).toEqual(pattern);
+          expect(service.drawThrows['calls'].argsFor(i)[4]).toEqual(beatsToDraw);
         }
 
       });
@@ -551,21 +554,21 @@ describe('DiagramService', () => {
 
       throws[0].targetJuggler = 1;
       throws[1].targetJuggler = 0;
-      service.drawThrows(drawSpy, 6, throws, arrowMarker, borderEast, borderWest, <Pattern>fourCount);
+      service.drawThrows(drawSpy, 6, throws, arrowMarker, <Beat[]>fourCount.beats);
       expect(service.isLineInDiagram['calls'].count()).toEqual(3);
       expect(service.getTargetThrow['calls'].count()).toEqual(3);
       for (let i = 0; i < 3; i++) {
         expect(service.isLineInDiagram['calls'].argsFor(i)).toEqual([throws[i]]);
-        expect(service.getTargetThrow['calls'].argsFor(i)).toEqual([6, throws[i], fourCount]);
+        expect(service.getTargetThrow['calls'].argsFor(i)).toEqual([6, throws[i], fourCount.beats]);
       }
       expect(service.drawThrowLine['calls'].count()).toEqual(2);
       expect(service.drawThrowLine['calls'].argsFor(0)).
-        toEqual([drawSpy, 'throw_6_0', throws[0], 6, arrowMarker, borderEast, borderWest, targetThrow]);
+        toEqual([drawSpy, 'throw_6_0', throws[0], 6, arrowMarker, targetThrow]);
       expect(service.drawThrowLine['calls'].argsFor(1)).
-        toEqual([drawSpy, 'throw_6_1', throws[1], 6, arrowMarker, borderEast, borderWest, targetThrow]);
+        toEqual([drawSpy, 'throw_6_1', throws[1], 6, arrowMarker, targetThrow]);
       expect(service.drawSelfCurve['calls'].count()).toEqual(1);
       expect(service.drawSelfCurve['calls'].argsFor(0)).
-        toEqual([drawSpy, 'throw_6_2', throws[2], 6, arrowMarker, borderEast, borderWest, targetThrow]);
+        toEqual([drawSpy, 'throw_6_2', throws[2], 6, arrowMarker, targetThrow]);
 
     });
   });
@@ -576,7 +579,7 @@ describe('DiagramService', () => {
       const sourceThrow = <Throw>fourCount.beats[1].throws[0];
       const pattern = <Pattern>fourCount;
 
-      const retVal = service.getTargetThrow(startBeat, sourceThrow, pattern);
+      const retVal = service.getTargetThrow(startBeat, sourceThrow, pattern.beats);
       expect(retVal).toBe(pattern.beats[2].throws[0]);
     });
     it('should calculate pass targetThrow without modulus', () => {
@@ -584,7 +587,7 @@ describe('DiagramService', () => {
       const sourceThrow = <Throw>fourCount.beats[0].throws[0];
       const pattern = <Pattern>fourCount;
 
-      const retVal = service.getTargetThrow(startBeat, sourceThrow, pattern);
+      const retVal = service.getTargetThrow(startBeat, sourceThrow, pattern.beats);
       expect(retVal).toBe(pattern.beats[1].throws[1]);
     });
 
@@ -593,7 +596,7 @@ describe('DiagramService', () => {
       const sourceThrow = <Throw>fourCount.beats[3].throws[0];
       const pattern = <Pattern>fourCount;
 
-      const retVal = service.getTargetThrow(startBeat, sourceThrow, pattern);
+      const retVal = service.getTargetThrow(startBeat, sourceThrow, pattern.beats);
       expect(retVal).toBe(pattern.beats[0].throws[0]);
     });
   });
@@ -711,7 +714,6 @@ describe('DiagramService', () => {
       borderWest = {
         id: 'west'
       };
-      spyOn(service, 'getLineIntersection').and.returnValue(null);
     });
 
     describe('isLineInDiagram', function () {
@@ -771,7 +773,7 @@ describe('DiagramService', () => {
         const id = 'foobar';
         const pos1 = service.getBeatPosition(0, 0);
         const pos2 = service.getBeatPosition(1, 0);
-        service.drawThrowLine(drawSpy, id, throwObj, 0, arrowMarker, borderEast, borderWest, targetThrow);
+        service.drawThrowLine(drawSpy, id, throwObj, 0, arrowMarker, targetThrow);
 
         const start = service.getCircleRight(pos1);
         const end = service.getCircleLeft(pos2);
@@ -788,7 +790,7 @@ describe('DiagramService', () => {
         throwObj.targetJuggler = 1;
         const pos1 = service.getBeatPosition(0, 0);
         const pos2 = service.getBeatPosition(1, 1);
-        service.drawThrowLine(drawSpy, id, throwObj, 0, arrowMarker, borderEast, borderWest, targetThrow);
+        service.drawThrowLine(drawSpy, id, throwObj, 0, arrowMarker, targetThrow);
         const start = service.getCircleLowerRight(pos1);
         const end = service.getCircleUpperLeft(pos2);
         expect(drawSpy.line).toHaveBeenCalledWith(start.x, start.y, end.x, end.y);
@@ -803,7 +805,7 @@ describe('DiagramService', () => {
         throwObj.sourceJuggler = 1;
         const pos1 = service.getBeatPosition(0, 1);
         const pos2 = service.getBeatPosition(1, 0);
-        service.drawThrowLine(drawSpy, id, throwObj, 0, arrowMarker, null, null, targetThrow);
+        service.drawThrowLine(drawSpy, id, throwObj, 0, arrowMarker, targetThrow);
         const start = service.getCircleUpperRight(pos1);
         const end = service.getCircleLowerLeft(pos2);
         expect(drawSpy.line).toHaveBeenCalledWith(start.x, start.y, end.x, end.y);
@@ -813,117 +815,6 @@ describe('DiagramService', () => {
         expect(lineSpy.plot).not.toHaveBeenCalled();
       });
 
-      describe('wrapping', function () {
-        beforeEach(function () {
-          // 3 beats wide
-          patternService.selectedPattern = {
-            name: 'ignore',
-            jugglerCount: 2,
-            beats: [{ throws: [] }, { throws: [] }, { throws: [] }]
-          };
-        });
-        it('should split up straight throw', function () {
-
-          const id = 'foobar';
-          throwObj.sourceJuggler = 0;
-          const pos1 = service.getBeatPosition(2, 0);
-          const posX = service.getBeatPosition(3, 0);
-          service.getLineIntersection['and'].returnValue({ x: 300, y: pos1.y });
-
-          service.drawThrowLine(drawSpy, id, throwObj, 2, arrowMarker, borderEast, borderWest, targetThrow);
-
-          const start = service.getCircleRight(pos1);
-          const end = {
-            x: 300,
-            y: pos1.y
-          };
-          const endOffScreen = service.getCircleLeft(posX);
-
-          expect(drawSpy.line.calls.argsFor(0)).toEqual([start.x, start.y, endOffScreen.x, endOffScreen.y]);
-          expect(lineSpy.addClass).toHaveBeenCalledWith('causal_pass_line');
-          expect(lineSpy.id).toHaveBeenCalledWith(id);
-          expect(lineSpy.marker.calls.argsFor(0)).toEqual(['end', arrowMarker]);
-          expect(lineSpy.marker.calls.argsFor(1).splice(0, 3)).toEqual(['end', 0, 0]);
-          expect(lineSpy.plot).toHaveBeenCalledWith(start.x, start.y, end.x, end.y);
-
-          const pos2 = service.getBeatPosition(0, 0);
-          const fullEnd = service.getCircleLeft(pos2);
-          expect(drawSpy.line.calls.argsFor(1)).toEqual([0, end.y, fullEnd.x, fullEnd.y]);
-          expect(lineSpy2.addClass).toHaveBeenCalledWith('causal_pass_line');
-          expect(lineSpy2.id).toHaveBeenCalledWith(id + '_A');
-          expect(lineSpy2.marker).toHaveBeenCalledWith('end', arrowMarker);
-
-        });
-
-        it('should split up up pass', function () {
-          const id = 'foobar';
-          throwObj.sourceJuggler = 1;
-          throwObj.targetJuggler = 0;
-          const pos1 = service.getBeatPosition(2, 1);
-          const posX = service.getBeatPosition(3, 0);
-          service.getLineIntersection['and'].returnValue({ x: 300, y: 137.5 });
-
-
-          service.drawThrowLine(drawSpy, id, throwObj, 2, arrowMarker, borderEast, borderWest, targetThrow);
-
-          const start = service.getCircleUpperRight(pos1);
-          const end = {
-            x: 300,
-            y: 137.5
-          };
-          const endOffScreen = service.getCircleLowerLeft(posX);
-
-          expect(drawSpy.line.calls.argsFor(0)).toEqual([start.x, start.y, endOffScreen.x, endOffScreen.y]);
-          expect(lineSpy.addClass).toHaveBeenCalledWith('causal_pass_line');
-          expect(lineSpy.id).toHaveBeenCalledWith(id);
-          expect(lineSpy.marker.calls.argsFor(0)).toEqual(['end', arrowMarker]);
-          expect(lineSpy.marker.calls.argsFor(1).splice(0, 3)).toEqual(['end', 0, 0]);
-          expect(lineSpy.plot).toHaveBeenCalledWith(start.x, start.y, end.x, end.y);
-
-
-          const pos2 = service.getBeatPosition(0, 0);
-          const fullEnd = service.getCircleLowerLeft(pos2);
-          expect(drawSpy.line.calls.argsFor(1)).toEqual([0, end.y, fullEnd.x, fullEnd.y]);
-          expect(lineSpy2.addClass).toHaveBeenCalledWith('causal_pass_line');
-          expect(lineSpy2.id).toHaveBeenCalledWith(id + '_A');
-          expect(lineSpy2.marker).toHaveBeenCalledWith('end', arrowMarker);
-        });
-
-        it('should split up down pass', function () {
-          const id = 'foobar';
-          throwObj.sourceJuggler = 0;
-          throwObj.targetJuggler = 1;
-          const pos1 = service.getBeatPosition(2, 0);
-          const posX = service.getBeatPosition(3, 1);
-          service.getLineIntersection['and'].returnValue({ x: 300, y: 137.5 });
-
-
-          service.drawThrowLine(drawSpy, id, throwObj, 2, arrowMarker, borderEast, borderWest, targetThrow);
-
-          const start = service.getCircleLowerRight(pos1);
-          const end = {
-            x: 300,
-            y: 137.5
-          };
-          const endOffScreen = service.getCircleUpperLeft(posX);
-
-          expect(drawSpy.line.calls.argsFor(0)).toEqual([start.x, start.y, endOffScreen.x, endOffScreen.y]);
-          expect(lineSpy.addClass).toHaveBeenCalledWith('causal_pass_line');
-          expect(lineSpy.id).toHaveBeenCalledWith(id);
-          expect(lineSpy.marker.calls.argsFor(0)).toEqual(['end', arrowMarker]);
-          expect(lineSpy.marker.calls.argsFor(1).splice(0, 3)).toEqual(['end', 0, 0]);
-          expect(lineSpy.plot).toHaveBeenCalledWith(start.x, start.y, end.x, end.y);
-
-
-          const pos2 = service.getBeatPosition(0, 1);
-          const fullEnd = service.getCircleUpperLeft(pos2);
-          expect(drawSpy.line.calls.argsFor(1)).toEqual([0, end.y, fullEnd.x, fullEnd.y]);
-          expect(lineSpy2.addClass).toHaveBeenCalledWith('causal_pass_line');
-          expect(lineSpy2.id).toHaveBeenCalledWith(id + '_A');
-          expect(lineSpy2.marker).toHaveBeenCalledWith('end', arrowMarker);
-        });
-      });
-
       describe('zip start', () => {
         it('should draw an up pass starting from the zip throw circle', () => {
           const id = 'foobar';
@@ -931,7 +822,7 @@ describe('DiagramService', () => {
           throwObj.zip = true;
           const pos1 = service.getZipThrowPosition(0, 1);
           const pos2 = service.getBeatPosition(1, 0);
-          service.drawThrowLine(drawSpy, id, throwObj, 0, arrowMarker, null, null, targetThrow);
+          service.drawThrowLine(drawSpy, id, throwObj, 0, arrowMarker, targetThrow);
           const start = service.getCircleUpperRight(pos1, service.ZIP_RADIUS);
           const end = service.getCircleLowerLeft(pos2);
           expect(drawSpy.line).toHaveBeenCalledWith(start.x, start.y, end.x, end.y);
@@ -949,7 +840,7 @@ describe('DiagramService', () => {
           targetThrow.zip = true;
           const pos1 = service.getBeatPosition(0, 1);
           const pos2 = service.getZipReceivePosition(1, 0);
-          service.drawThrowLine(drawSpy, id, throwObj, 0, arrowMarker, null, null, targetThrow);
+          service.drawThrowLine(drawSpy, id, throwObj, 0, arrowMarker, targetThrow);
           const start = service.getCircleUpperRight(pos1);
           const end = service.getCircleLowerLeft(pos2, service.ZIP_RADIUS);
           expect(drawSpy.line).toHaveBeenCalledWith(start.x, start.y, end.x, end.y);
@@ -957,43 +848,6 @@ describe('DiagramService', () => {
           expect(lineSpy.id).toHaveBeenCalledWith(id);
           expect(lineSpy.marker).toHaveBeenCalledWith('end', arrowMarker);
           expect(lineSpy.plot).not.toHaveBeenCalled();
-        });
-        it('should split up straight throw to zip end', function () {
-          patternService.selectedPattern = {
-            name: 'ignore',
-            jugglerCount: 2,
-            beats: [{ throws: [] }, { throws: [] }, { throws: [] }]
-          };
-          const id = 'foobar';
-          throwObj.sourceJuggler = 0;
-          targetThrow.zip = true;
-          const pos1 = service.getBeatPosition(2, 0);
-          const posX = service.getZipReceivePosition(3, 0);
-          service.getLineIntersection['and'].returnValue({ x: 300, y: pos1.y });
-
-          service.drawThrowLine(drawSpy, id, throwObj, 2, arrowMarker, borderEast, borderWest, targetThrow);
-
-          const start = service.getCircleRight(pos1);
-          const end = {
-            x: 300,
-            y: pos1.y
-          };
-          const endOffScreen = service.getCircleLeft(posX, service.ZIP_RADIUS);
-
-          expect(drawSpy.line.calls.argsFor(0)).toEqual([start.x, start.y, endOffScreen.x, endOffScreen.y]);
-          expect(lineSpy.addClass).toHaveBeenCalledWith('causal_pass_line');
-          expect(lineSpy.id).toHaveBeenCalledWith(id);
-          expect(lineSpy.marker.calls.argsFor(0)).toEqual(['end', arrowMarker]);
-          expect(lineSpy.marker.calls.argsFor(1).splice(0, 3)).toEqual(['end', 0, 0]);
-          expect(lineSpy.plot).toHaveBeenCalledWith(start.x, start.y, end.x, end.y);
-
-          const pos2 = service.getZipReceivePosition(0, 0);
-          const fullEnd = service.getCircleLeft(pos2, service.ZIP_RADIUS);
-          expect(drawSpy.line.calls.argsFor(1)).toEqual([0, end.y, fullEnd.x, fullEnd.y]);
-          expect(lineSpy2.addClass).toHaveBeenCalledWith('causal_pass_line');
-          expect(lineSpy2.id).toHaveBeenCalledWith(id + '_A');
-          expect(lineSpy2.marker).toHaveBeenCalledWith('end', arrowMarker);
-
         });
       });
     });
@@ -1012,7 +866,7 @@ describe('DiagramService', () => {
         throwObj.throwHeight = 2;
         const pos1 = service.getBeatPosition(0, 0);
         const pos2 = service.getBeatPosition(0, 0);
-        service.drawSelfCurve(drawSpy, id, throwObj, 0, arrowMarker, borderEast, borderWest, targetThrow);
+        service.drawSelfCurve(drawSpy, id, throwObj, 0, arrowMarker, targetThrow);
 
         const start = service.getCircleUpperLeft(pos1);
         const end = service.getCircleUpperRight(pos2);
@@ -1032,7 +886,7 @@ describe('DiagramService', () => {
         throwObj.throwHeight = 0;
         const pos1 = service.getBeatPosition(2, 0);
         const pos2 = service.getBeatPosition(0, 0);
-        service.drawSelfCurve(drawSpy, id, throwObj, 2, arrowMarker, borderEast, borderWest, targetThrow);
+        service.drawSelfCurve(drawSpy, id, throwObj, 2, arrowMarker, targetThrow);
 
         const start = service.getCircleLowerLeft(pos1);
         const end = service.getCircleLowerRight(pos2);
@@ -1052,7 +906,7 @@ describe('DiagramService', () => {
         throwObj.throwHeight = 1;
         const pos1 = service.getBeatPosition(1, 0);
         const pos2 = service.getBeatPosition(0, 0);
-        service.drawSelfCurve(drawSpy, id, throwObj, 1, arrowMarker, borderEast, borderWest, targetThrow);
+        service.drawSelfCurve(drawSpy, id, throwObj, 1, arrowMarker, targetThrow);
 
         const start = service.getCircleBottom(pos1);
         const end = service.getCircleBottom(pos2);
@@ -1072,7 +926,7 @@ describe('DiagramService', () => {
         throwObj.throwHeight = 6;
         const pos1 = service.getBeatPosition(0, 0);
         const pos2 = service.getBeatPosition(4, 0);
-        service.drawSelfCurve(drawSpy, id, throwObj, 0, arrowMarker, borderEast, borderWest, targetThrow);
+        service.drawSelfCurve(drawSpy, id, throwObj, 0, arrowMarker, targetThrow);
 
         const start = service.getCircleUpperRight(pos1);
         const end = service.getCircleUpperLeft(pos2);
@@ -1096,7 +950,7 @@ describe('DiagramService', () => {
           throwObj.throwHeight = 1;
           const pos1 = service.getZipThrowPosition(1, 0);
           const pos2 = service.getBeatPosition(0, 0);
-          service.drawSelfCurve(drawSpy, id, throwObj, 1, arrowMarker, borderEast, borderWest, targetThrow);
+          service.drawSelfCurve(drawSpy, id, throwObj, 1, arrowMarker, targetThrow);
 
           const start = service.getCircleBottom(pos1, service.ZIP_RADIUS);
           const end = service.getCircleBottom(pos2);
@@ -1117,7 +971,7 @@ describe('DiagramService', () => {
           throwObj.throwHeight = 6;
           const pos1 = service.getZipThrowPosition(0, 0);
           const pos2 = service.getBeatPosition(4, 0);
-          service.drawSelfCurve(drawSpy, id, throwObj, 0, arrowMarker, borderEast, borderWest, targetThrow);
+          service.drawSelfCurve(drawSpy, id, throwObj, 0, arrowMarker, targetThrow);
 
           const start = service.getCircleUpperRight(pos1, service.ZIP_RADIUS);
           const end = service.getCircleUpperLeft(pos2);
@@ -1142,7 +996,7 @@ describe('DiagramService', () => {
           throwObj.throwHeight = 1;
           const pos1 = service.getBeatPosition(1, 0);
           const pos2 = service.getZipReceivePosition(0, 0);
-          service.drawSelfCurve(drawSpy, id, throwObj, 1, arrowMarker, borderEast, borderWest, targetThrow);
+          service.drawSelfCurve(drawSpy, id, throwObj, 1, arrowMarker, targetThrow);
 
           const start = service.getCircleBottom(pos1);
           const end = service.getCircleBottom(pos2, service.ZIP_RADIUS);
@@ -1161,7 +1015,7 @@ describe('DiagramService', () => {
           throwObj.throwHeight = 6;
           const pos1 = service.getBeatPosition(0, 0);
           const pos2 = service.getZipReceivePosition(4, 0);
-          service.drawSelfCurve(drawSpy, id, throwObj, 0, arrowMarker, borderEast, borderWest, targetThrow);
+          service.drawSelfCurve(drawSpy, id, throwObj, 0, arrowMarker, targetThrow);
 
           const start = service.getCircleUpperRight(pos1);
           const end = service.getCircleUpperLeft(pos2, service.ZIP_RADIUS);
@@ -1181,7 +1035,7 @@ describe('DiagramService', () => {
           throwObj.zip = true;
           const pos1 = service.getZipThrowPosition(0, 0);
           const pos2 = service.getZipReceivePosition(0, 0);
-          service.drawSelfCurve(drawSpy, id, throwObj, 0, arrowMarker, borderEast, borderWest, throwObj);
+          service.drawSelfCurve(drawSpy, id, throwObj, 0, arrowMarker, throwObj);
 
           const start = service.getCircleUpperLeft(pos1, service.ZIP_RADIUS);
           const end = service.getCircleUpperRight(pos2, service.ZIP_RADIUS);
@@ -1196,284 +1050,6 @@ describe('DiagramService', () => {
           expect(pathSpy.plot).not.toHaveBeenCalled();
         });
       });
-
-      describe('wrapping', function () {
-
-        beforeEach(function () {
-          // 3 beats wide
-          patternService.selectedPattern = {
-            name: 'ignore',
-            jugglerCount: 2,
-            beats: [{ throws: [] }, { throws: [] }, { throws: [] }]
-          };
-        });
-
-        describe('wrap eastern border', function () {
-          it('should split up self throw', function () {
-            const id = 'foobar';
-            throwObj.sourceJuggler = 0;
-            throwObj.targetJuggler = 0;
-            throwObj.throwHeight = 4;
-            const pos1 = service.getBeatPosition(1, 0);
-            const posX = service.getBeatPosition(3, 0);
-            service.getLineIntersection['and'].callFake((path, border) => {
-              if (border.id === 'east') {
-                return { x: 300, y: 29.910105658160088 };
-              } else {
-                return null;
-              }
-            });
-
-            service.drawSelfCurve(drawSpy, id, throwObj, 1, arrowMarker, borderEast, borderWest, targetThrow);
-
-
-            const start = service.getCircleUpperRight(pos1);
-            const end = {
-              x: 300,
-              y: 29.910105658160088
-            };
-            const endOffScreen = service.getCircleUpperLeft(posX);
-
-            const expectedPath0 =
-              'm ' + start.x + ' ' + start.y + ' A 100 100 0 0 1 ' + endOffScreen.x + ' ' + endOffScreen.y;
-            const expectedPath1 =
-              'm ' + start.x + ' ' + start.y + ' A 100 100 0 0 1 ' + end.x + ' ' + end.y;
-
-            expect(drawSpy.path.calls.argsFor(0)).toEqual([expectedPath0]);
-            expect(pathSpy.addClass).toHaveBeenCalledWith('causal_pass_line');
-            expect(pathSpy.id).toHaveBeenCalledWith(id);
-            expect(pathSpy.marker.calls.argsFor(0).splice(0, 3)).toEqual(['end', arrowMarker]);
-            expect(pathSpy.fill).toHaveBeenCalledWith('transparent');
-            expect(pathSpy.plot).toHaveBeenCalledWith(expectedPath1);
-            expect(pathSpy.marker.calls.argsFor(1).splice(0, 3)).toEqual(['end', 0, 0]);
-
-
-            const pos2 = service.getBeatPosition(0, 0);
-
-            const start2 = {
-              x: 0,
-              y: end.y
-            };
-            const end2 = service.getCircleUpperLeft(pos2);
-            const expectedPath2 =
-              'm ' + start2.x + ' ' + start2.y + ' A 100 100 0 0 1 ' + end2.x + ' ' + end2.y;
-            expect(drawSpy.path.calls.argsFor(1)).toEqual([expectedPath2]);
-            expect(pathSpy2.addClass).toHaveBeenCalledWith('causal_pass_line');
-            expect(pathSpy2.id).toHaveBeenCalledWith(id + '_A');
-            expect(pathSpy2.marker).toHaveBeenCalledWith('end', arrowMarker);
-            expect(pathSpy.fill).toHaveBeenCalledWith('transparent');
-
-          });
-
-          it('should split up self throw that ends in zip', function () {
-            const id = 'foobar';
-            throwObj.sourceJuggler = 0;
-            throwObj.targetJuggler = 0;
-            throwObj.throwHeight = 4;
-            targetThrow.zip = true;
-
-            const pos1 = service.getBeatPosition(1, 0);
-            const posX = service.getZipReceivePosition(3, 0);
-            service.getLineIntersection['and'].callFake((path, border) => {
-              if (border.id === 'east') {
-                return { x: 300, y: 29.910105658160088 };
-              } else {
-                return null;
-              }
-            });
-
-            service.drawSelfCurve(drawSpy, id, throwObj, 1, arrowMarker, borderEast, borderWest, targetThrow);
-
-
-            const start = service.getCircleUpperRight(pos1);
-            const end = {
-              x: 300,
-              y: 29.910105658160088
-            };
-            const endOffScreen = service.getCircleUpperLeft(posX, service.ZIP_RADIUS);
-
-            const expectedPath0 =
-              'm ' + start.x + ' ' + start.y + ' A 100 100 0 0 1 ' + endOffScreen.x + ' ' + endOffScreen.y;
-            const expectedPath1 =
-              'm ' + start.x + ' ' + start.y + ' A 100 100 0 0 1 ' + end.x + ' ' + end.y;
-
-            expect(drawSpy.path.calls.argsFor(0)).toEqual([expectedPath0]);
-            expect(pathSpy.addClass).toHaveBeenCalledWith('causal_pass_line');
-            expect(pathSpy.id).toHaveBeenCalledWith(id);
-            expect(pathSpy.marker.calls.argsFor(0).splice(0, 3)).toEqual(['end', arrowMarker]);
-            expect(pathSpy.fill).toHaveBeenCalledWith('transparent');
-            expect(pathSpy.plot).toHaveBeenCalledWith(expectedPath1);
-            expect(pathSpy.marker.calls.argsFor(1).splice(0, 3)).toEqual(['end', 0, 0]);
-
-
-            const pos2 = service.getZipReceivePosition(0, 0);
-
-            const start2 = {
-              x: 0,
-              y: end.y
-            };
-            const end2 = service.getCircleUpperLeft(pos2, service.ZIP_RADIUS);
-            const expectedPath2 =
-              'm ' + start2.x + ' ' + start2.y + ' A 100 100 0 0 1 ' + end2.x + ' ' + end2.y;
-            expect(drawSpy.path.calls.argsFor(1)).toEqual([expectedPath2]);
-            expect(pathSpy2.addClass).toHaveBeenCalledWith('causal_pass_line');
-            expect(pathSpy2.id).toHaveBeenCalledWith(id + '_A');
-            expect(pathSpy2.marker).toHaveBeenCalledWith('end', arrowMarker);
-            expect(pathSpy.fill).toHaveBeenCalledWith('transparent');
-
-          });
-        });
-        describe('wrap western border', function () {
-          it('should split up self throw', function () {
-            service.diagramWidth = 300;
-            const id = 'foobar';
-            throwObj.sourceJuggler = 0;
-            throwObj.targetJuggler = 0;
-            throwObj.throwHeight = 0;
-            const pos1 = service.getBeatPosition(1, 0);
-            const posX = service.getBeatPosition(-1, 0);
-            service.getLineIntersection['and'].callFake((path, border) => {
-              if (border.id === 'west') {
-                return { x: 0, y: 120.08989069607223 };
-              } else {
-                return null;
-              }
-            });
-            service.drawSelfCurve(drawSpy, id, throwObj, 1, arrowMarker, borderEast, borderWest, targetThrow);
-
-            const start = service.getCircleLowerLeft(pos1);
-            const end = {
-              x: 0,
-              y: 120.08989069607223
-            };
-            const endOffScreen = service.getCircleLowerRight(posX);
-
-            const expectedPath0 =
-              'm ' + start.x + ' ' + start.y + ' A 100 100 0 0 1 ' + endOffScreen.x + ' ' + endOffScreen.y;
-            const expectedPath1 =
-              'm ' + start.x + ' ' + start.y + ' A 100 100 0 0 1 ' + end.x + ' ' + end.y;
-            expect(drawSpy.path.calls.argsFor(0)).toEqual([expectedPath0]);
-            expect(pathSpy.addClass).toHaveBeenCalledWith('causal_pass_line');
-            expect(pathSpy.id).toHaveBeenCalledWith(id);
-            expect(pathSpy.marker.calls.argsFor(0).splice(0, 3)).toEqual(['end', arrowMarker]);
-            expect(pathSpy.fill).toHaveBeenCalledWith('transparent');
-            expect(pathSpy.plot).toHaveBeenCalledWith(expectedPath1);
-            expect(pathSpy.marker.calls.argsFor(1).splice(0, 3)).toEqual(['end', 0, 0]);
-
-            const pos2 = service.getBeatPosition(2, 0);
-
-            const start2 = {
-              x: 300,
-              y: end.y
-            };
-            const end2 = service.getCircleLowerRight(pos2);
-            const expectedPath2 =
-              'm ' + start2.x + ' ' + start2.y + ' A 100 100 0 0 1 ' + end2.x + ' ' + end2.y;
-            expect(drawSpy.path.calls.argsFor(1)).toEqual([expectedPath2]);
-            expect(pathSpy2.addClass).toHaveBeenCalledWith('causal_pass_line');
-            expect(pathSpy2.id).toHaveBeenCalledWith(id + '_A');
-            expect(pathSpy2.marker).toHaveBeenCalledWith('end', arrowMarker);
-            expect(pathSpy.fill).toHaveBeenCalledWith('transparent');
-
-          });
-
-          it('should split up self zip throw', function () {
-            targetThrow.zip = true;
-            service.diagramWidth = 300;
-            const id = 'foobar';
-            throwObj.sourceJuggler = 0;
-            throwObj.targetJuggler = 0;
-            throwObj.throwHeight = 0;
-            const pos1 = service.getBeatPosition(1, 0);
-            const posX = service.getZipReceivePosition(-1, 0);
-            service.getLineIntersection['and'].callFake((path, border) => {
-              if (border.id === 'west') {
-                return { x: 0, y: 120.08989069607223 };
-              } else {
-                return null;
-              }
-            });
-            service.drawSelfCurve(drawSpy, id, throwObj, 1, arrowMarker, borderEast, borderWest, targetThrow);
-
-            const start = service.getCircleLowerLeft(pos1);
-            const end = {
-              x: 0,
-              y: 120.08989069607223
-            };
-            const endOffScreen = service.getCircleLowerRight(posX, service.ZIP_RADIUS);
-
-            const expectedPath0 =
-              'm ' + start.x + ' ' + start.y + ' A 100 100 0 0 1 ' + endOffScreen.x + ' ' + endOffScreen.y;
-            const expectedPath1 =
-              'm ' + start.x + ' ' + start.y + ' A 100 100 0 0 1 ' + end.x + ' ' + end.y;
-            expect(drawSpy.path.calls.argsFor(0)).toEqual([expectedPath0]);
-            expect(pathSpy.addClass).toHaveBeenCalledWith('causal_pass_line');
-            expect(pathSpy.id).toHaveBeenCalledWith(id);
-            expect(pathSpy.marker.calls.argsFor(0).splice(0, 3)).toEqual(['end', arrowMarker]);
-            expect(pathSpy.fill).toHaveBeenCalledWith('transparent');
-            expect(pathSpy.plot).toHaveBeenCalledWith(expectedPath1);
-            expect(pathSpy.marker.calls.argsFor(1).splice(0, 3)).toEqual(['end', 0, 0]);
-
-            const pos2 = service.getZipReceivePosition(2, 0);
-
-            const start2 = {
-              x: 300,
-              y: end.y
-            };
-            const end2 = service.getCircleLowerRight(pos2, service.ZIP_RADIUS);
-            const expectedPath2 =
-              'm ' + start2.x + ' ' + start2.y + ' A 100 100 0 0 1 ' + end2.x + ' ' + end2.y;
-            expect(drawSpy.path.calls.argsFor(1)).toEqual([expectedPath2]);
-            expect(pathSpy2.addClass).toHaveBeenCalledWith('causal_pass_line');
-            expect(pathSpy2.id).toHaveBeenCalledWith(id + '_A');
-            expect(pathSpy2.marker).toHaveBeenCalledWith('end', arrowMarker);
-            expect(pathSpy.fill).toHaveBeenCalledWith('transparent');
-          });
-        });
-
-      });
-    });
-  });
-
-  describe('getLineIntersection', () => {
-    let lineOrPath, line, intersectionPoint;
-
-
-    beforeEach(() => {
-      intersectionPoint = { x: 3, y: 4 };
-      lineOrPath = {
-        id: 'lineOrPath',
-        intersectsLine: jasmine.createSpy().and.returnValue(intersectionPoint)
-      };
-
-      line = {
-        id: 'line'
-      };
-    });
-
-    it('should return null if no line', () => {
-      const retVal = service.getLineIntersection(lineOrPath, null);
-      expect(retVal).toEqual(null);
-    });
-    it('should return null if no intersection', () => {
-      lineOrPath.intersectsLine.and.returnValue(null);
-      const retVal = service.getLineIntersection(lineOrPath, line);
-      expect(retVal).toEqual(null);
-    });
-    it('should return a single point if there is one intersection', () => {
-      const retVal = service.getLineIntersection(lineOrPath, line);
-      expect(retVal).toEqual(intersectionPoint);
-    });
-    it('should return the first point single point if there are multiple points', () => {
-      lineOrPath.intersectsLine.and.returnValue([intersectionPoint, { x: 7, y: 8 }]);
-      const retVal = service.getLineIntersection(lineOrPath, line);
-      expect(retVal).toEqual(intersectionPoint);
-    });
-    it('should return null if there 0 points', () => {
-      lineOrPath.intersectsLine.and.returnValue([]);
-      const retVal = service.getLineIntersection(lineOrPath, line);
-      expect(retVal).toEqual(null);
     });
   });
 });
-
