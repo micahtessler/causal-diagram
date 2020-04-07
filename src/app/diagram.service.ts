@@ -363,7 +363,9 @@ export class DiagramService {
     const line = draw.line(startPos.x, startPos.y, endPos.x, endPos.y);
     line.addClass('causal_pass_line');
     line.id(id);
-    line.marker('end', arrowMarker);
+    if (endPos.x < this.diagramWidth) {
+      line.marker('end', arrowMarker);
+    }
 
   }
 
@@ -420,7 +422,8 @@ export class DiagramService {
     path.addClass('causal_pass_line');
     path.fill('transparent');
     path.id(id);
-    path.marker('end', arrowMarker);
-    console.log("drawing curve for beat " + beatNb + "from " + startPos + " to " + endPos);
+    if (endPos.x > 0 && endPos.x < this.diagramWidth) {
+      path.marker('end', arrowMarker);
+    }
   }
 }
