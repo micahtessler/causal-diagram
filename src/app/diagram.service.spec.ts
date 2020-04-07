@@ -4,7 +4,6 @@ import { PatternService } from './pattern.service';
 import fourCount from './patterns/fourCount.json';
 import { Pattern } from './model/Pattern';
 import { Throw } from './model/Throw';
-import { tick } from '@angular/core/src/render3';
 
 
 function getOtherHand(hand: string): string {
@@ -1435,7 +1434,7 @@ describe('DiagramService', () => {
       });
     });
   });
-  
+
   describe('getLineIntersection', () => {
     let lineOrPath, line, intersectionPoint;
 

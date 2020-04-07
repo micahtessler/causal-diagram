@@ -3,8 +3,9 @@ import { Throw } from './model/Throw';
 import { Pattern } from './model/Pattern';
 import { PatternService } from './pattern.service';
 import { Position } from './model/Position';
-declare const SVG: any; // SVG inmported in angular.json
 import { Subject } from 'rxjs';
+import { SVG } from '@svgdotjs/svg.js'
+import {Beat} from './model/Beat';
 
 
 @Injectable({
@@ -48,15 +49,27 @@ export class DiagramService {
       return;
     }
 
-    const draw = SVG(this.div);
+    const draw = SVG().addTo(this.div);
 
+    const beatsToDraw = this.patternService.selectedPattern.beats.concat(this.patternService.selectedPattern.beats);
 
-    this.diagramWidth = this.BEAT_WIDTH * this.patternService.selectedPattern.beats.length;
+    this.diagramWidth = this.BEAT_WIDTH * beatsToDraw.length;
     this.diagramHeight = this.BEAT_HEIGHT * (this.patternService.selectedPattern.jugglerCount + 1);
 
     draw.viewbox(0, 0, this.diagramWidth, this.diagramHeight);
+    //clip the image
+    let clip = draw.clip();
+    clip.id('svgClip');
+    const clipRec = draw.rect(this.diagramWidth, this.diagramHeight);
+    clip.add(clipRec);
+    clipRec.x(0);
+    clipRec.y(0);
+    draw.clipWith(clip);
+    
     const bgRect = draw.rect(this.diagramWidth, this.diagramHeight);
     bgRect.addClass('causalBgRect');
+
+    
 
 
     // create arrow heads
@@ -83,11 +96,12 @@ export class DiagramService {
     borderSouth.addClass('causal_border');
     borderSouth.id('causal_border_south');
 
-    this.patternService.selectedPattern.beats.forEach((beat, i) => {
+
+    beatsToDraw.forEach((beat, i) => {
       this.drawCircles(draw, i, beat.throws, arrowMarker);
     });
-    this.patternService.selectedPattern.beats.forEach((beat, i) => {
-      this.drawThrows(draw, i, beat.throws, arrowMarker, borderEast, borderWest, this.patternService.selectedPattern);
+    beatsToDraw.forEach((beat, i) => {
+      this.drawThrows(draw, i, beat.throws, arrowMarker, borderEast, borderWest, beatsToDraw);
     });
 
 
@@ -268,11 +282,11 @@ export class DiagramService {
     line.marker('end', arrowMarker);
   }
 
-  drawThrows(draw, beatNb: number, throws: Array<Throw>, arrowMarker: any, borderEast, borderWest, pattern: Pattern): void {
+  drawThrows(draw, beatNb: number, throws: Array<Throw>, arrowMarker: any, borderEast, borderWest, beatsToDraw: Array<Beat>): void {
     for (let j = 0; j < throws.length; j++) {
       // TODO: need a better ID system for throws (multiplexes...)
       const id = 'throw_' + beatNb + '_' + throws[j].sourceJuggler;
-      const targetThrow = this.getTargetThrow(beatNb, throws[j], pattern);
+      const targetThrow = this.getTargetThrow(beatNb, throws[j], beatsToDraw);
       if (this.isLineInDiagram(throws[j])) {
         this.drawThrowLine(draw, id, throws[j], beatNb, arrowMarker, borderEast, borderWest, targetThrow);
       } else {
@@ -282,10 +296,10 @@ export class DiagramService {
     }
   }
 
-  getTargetThrow(startBeat: number, sourceThrow: Throw, pattern: Pattern): Throw {
-    let targetBeatNumber = (startBeat + sourceThrow.throwHeight - 2) % pattern.beats.length;
+  getTargetThrow(startBeat: number, sourceThrow: Throw, beats: Array<Beat>): Throw {
+    let targetBeatNumber = (startBeat + sourceThrow.throwHeight - 2);
 
-    const targetBeat = pattern.beats[targetBeatNumber].throws.find((t) => {
+    const targetBeat = beats[targetBeatNumber % beats.length].throws.find((t) => {
       return (t.sourceJuggler === sourceThrow.targetJuggler);
     });
     return targetBeat;
@@ -346,40 +360,12 @@ export class DiagramService {
         endPos = this.getCircleUpperLeft(beat2Pos, beat2Radius);
       }
     }
-    const line = draw.line(startPos.x, startPos.y, endPos.x, endPos.y);
-    line.addClass('causal_pass_line');
-    line.id(id);
-    line.marker('end', arrowMarker);
-
-    const intersectionPoint = this.getLineIntersection(line, borderEast);
-
-    if (intersectionPoint != null) {
-      // wrapping around right diagram edge
-
-      // remove the marker
-      line.marker('end', 0, 0, () => { });
-      line.plot(startPos.x, startPos.y, intersectionPoint.x, intersectionPoint.y);
-
-      // create a new line starting from the edge of the screen.
-      // Beat2Nb is negative, so add beats
-      const newBeat2Nb = beat2Nb % this.patternService.selectedPattern.beats.length
-      let newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
-      if (targetThrow.zip) {
-        newBeat2Pos = this.getZipReceivePosition(newBeat2Nb, throwObj.targetJuggler);
-      }
-      if (straightThrow) {
-        endPos = this.getCircleLeft(newBeat2Pos, beat2Radius);
-      } else if (upThrow) {
-        endPos = this.getCircleLowerLeft(newBeat2Pos, beat2Radius);
-      } else {
-        endPos = this.getCircleUpperLeft(newBeat2Pos, beat2Radius);
-      }
-      const newId = id + '_A';
-      const line2 = draw.line(0, intersectionPoint.y, endPos.x, endPos.y);
-      line2.addClass('causal_pass_line');
-      line2.id(newId);
-      line2.marker('end', arrowMarker);
-    }
+    //if (endPos.x < this.diagramWidth) {
+      const line = draw.line(startPos.x, startPos.y, endPos.x, endPos.y);
+      line.addClass('causal_pass_line');
+      line.id(id);
+      line.marker('end', arrowMarker);
+    //}
   }
 
   drawSelfCurve(draw, id: string, throwObj: Throw, beatNb: number, arrowMarker: any, borderEast, borderWest, targetThrow: Throw): void {
@@ -387,7 +373,7 @@ export class DiagramService {
     let beat1Radius = this.CIRCLE_RADIUS;
     if (throwObj.zip) {
       beat1Pos = this.getZipThrowPosition(beatNb, throwObj.sourceJuggler);
-      beat1Radius = this.ZIP_RADIUS;      
+      beat1Radius = this.ZIP_RADIUS;
     }
     const beatDiff = this.getBeatDiff(throwObj);
     const beat2Nb = beatNb + beatDiff;
@@ -395,7 +381,7 @@ export class DiagramService {
     let beat2Radius = this.CIRCLE_RADIUS;
     if (targetThrow .zip) {
       beat2Pos = this.getZipReceivePosition(beat2Nb, throwObj.targetJuggler);
-      beat2Radius = this.ZIP_RADIUS; 
+      beat2Radius = this.ZIP_RADIUS;
     }
 
     let startPos;
@@ -422,99 +408,22 @@ export class DiagramService {
       endPos = this.getCircleUpperRight(beat2Pos, beat2Radius);
       radiusX = 20;
       radiusY = 30;
-    } else {  
+    } else {
       startPos = this.getCircleUpperRight(beat1Pos, beat1Radius);
       endPos = this.getCircleUpperLeft(beat2Pos, beat2Radius);
       radiusX = 100 * (beatDiff - 1);
       radiusY = 100 * (beatDiff - 1);
     }
 
-    let pathStr = 'm ' + startPos.x + ' ' + startPos.y + ' A ' + radiusX + ' ' +
-      radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + endPos.x + ' ' + endPos.y;
-    const path = draw.path(pathStr);
-    path.addClass('causal_pass_line');
-    path.fill('transparent');
-    path.id(id);
-    path.marker('end', arrowMarker);
-    let intersectionPoint = this.getLineIntersection(path, borderEast);
-
-    if (intersectionPoint != null) {
-      // wrapping around right diagram edge
-      // remove the marker
-      path.marker('end', 0, 0, () => { });
-
-      pathStr = 'm ' + startPos.x + ' ' + startPos.y + ' A ' + radiusX + ' ' +
-        radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + intersectionPoint.x + ' ' + intersectionPoint.y;
-      path.plot(pathStr);
-
-      const newBeat2Nb = beat2Nb % this.patternService.selectedPattern.beats.length;
-      let newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
-      if (targetThrow.zip) {
-        newBeat2Pos = this.getZipReceivePosition(newBeat2Nb, throwObj.targetJuggler);
-      }
-      // has to be forwards
-      endPos = this.getCircleUpperLeft(newBeat2Pos, beat2Radius);
-      const newId = id + '_A';
-      pathStr = 'm ' + 0 + ' ' + intersectionPoint.y + ' A ' + radiusX + ' ' +
+    //if (endPos.x < this.diagramWidth && endPos.x > 0) {
+      let pathStr = 'm ' + startPos.x + ' ' + startPos.y + ' A ' + radiusX + ' ' +
         radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + endPos.x + ' ' + endPos.y;
-      const path2 = draw.path(pathStr);
-      path2.addClass('causal_pass_line');
-      path2.fill('transparent');
-      path2.id(newId);
-      path2.marker('end', arrowMarker);
-    }
-
-    intersectionPoint = this.getLineIntersection(path, borderWest);
-
-    if (intersectionPoint != null) {
-      // wrapping around left diagram edge
-      // remove the marker
-      path.marker('end', 0, 0, () => { });
-
-      pathStr = 'm ' + startPos.x + ' ' + startPos.y + ' A ' + radiusX + ' ' +
-        radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + intersectionPoint.x + ' ' + intersectionPoint.y;
-      path.plot(pathStr);
-
-      // create a new line starting from the edge of the screen.
-      let newBeat2Nb = beat2Nb;
-      while (newBeat2Nb < 0) {
-        newBeat2Nb += this.patternService.selectedPattern.beats.length;
-      }
-      let newBeat2Pos = this.getBeatPosition(newBeat2Nb, throwObj.targetJuggler);
-      if (targetThrow.zip) {
-        newBeat2Pos = this.getZipReceivePosition(newBeat2Nb, throwObj.targetJuggler);
-      }
-      // has to be backwards
-      endPos = this.getCircleLowerRight(newBeat2Pos, beat2Radius);
-      const newId = id + '_A';
-      pathStr = 'm ' + this.diagramWidth + ' ' + intersectionPoint.y + ' A ' + radiusX + ' ' +
-        radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + endPos.x + ' ' + endPos.y;
-      const path2 = draw.path(pathStr);
-      path2.addClass('causal_pass_line');
-      path2.fill('transparent');
-      path2.id(newId);
-      path2.marker('end', arrowMarker);
-    }
-
-  }
-
-  getLineIntersection(lineOrPath: any, line) {
-    if (line == null) {
-      return null;
-    }
-    const intersectionPoints = lineOrPath.intersectsLine(line);
-    if (intersectionPoints != null) {
-      if (intersectionPoints.length != null) {
-        if (intersectionPoints.length > 0) {
-          return intersectionPoints[0];
-        } else {
-          return null;
-        }
-      } else {
-        return intersectionPoints;
-      }
-    } else {
-      return null;
-    }
+      const path = draw.path(pathStr);
+      path.addClass('causal_pass_line');
+      path.fill('transparent');
+      path.id(id);
+      path.marker('end', arrowMarker);
+      console.log("drawing curve for beat "+beatNb+ "from "+startPos+" to "+endPos);
+    //}
   }
 }

@@ -8,11 +8,12 @@ import { Observable } from 'rxjs';
   styleUrls: ['./diagram.component.css']
 })
 export class DiagramComponent implements OnInit {
-  @ViewChild('diagramDiv') diagramDiv: ElementRef;
+  @ViewChild('diagramDiv', {static: true}) diagramDiv: ElementRef;
 
   constructor(private diagramService: DiagramService) { }
 
   ngOnInit() {
+    console.log(this.diagramDiv);
     this.diagramService.divObs.next(this.diagramDiv.nativeElement);
     this.diagramService.drawSVG();
   }

@@ -1,10 +1,8 @@
-
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { NavbarComponent } from './navbar.component';
 import { Pattern } from '../model/Pattern';
 import fourCount from '../patterns/fourCount.json'
+import {of} from 'rxjs';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
@@ -19,9 +17,7 @@ describe('NavbarComponent', () => {
     diagramService ={
       drawSVG: jasmine.createSpy()
     }
-    spyOn(breakpointObserver, 'observe').and.returnValue({
-      pipe: () => { }
-    });
+    spyOn(breakpointObserver, 'observe').and.returnValue(of(null));
     component = new NavbarComponent(breakpointObserver, patternService, diagramService);
 
   });
@@ -51,7 +47,7 @@ describe('NavbarComponent', () => {
       spyOn(document, 'createElement').and.returnValue(link);
       spyOn(document.body, 'appendChild');
       spyOn(document.body, 'removeChild');
-      patternAsURI = 
+      patternAsURI =
       "data:application/json,"+encodeURIComponent(JSON.stringify(myPattern, null, 2));
 
     });
@@ -65,7 +61,7 @@ describe('NavbarComponent', () => {
       expect(link.click).toHaveBeenCalled();
       expect(document.body.removeChild).toHaveBeenCalledWith(link);
     });
-    
+
 
   });
 });
