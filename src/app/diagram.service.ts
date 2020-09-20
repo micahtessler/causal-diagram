@@ -57,14 +57,6 @@ export class DiagramService {
     this.diagramHeight = this.BEAT_HEIGHT * (this.patternService.selectedPattern.jugglerCount + 1);
 
     draw.viewbox(0, 0, this.diagramWidth, this.diagramHeight);
-    //clip the image
-    let clip = draw.clip();
-    clip.id('svgClip');
-    const clipRec = draw.rect(this.diagramWidth, this.diagramHeight);
-    clip.add(clipRec);
-    clipRec.x(0);
-    clipRec.y(0);
-    draw.clipWith(clip);
 
     const bgRect = draw.rect(this.diagramWidth, this.diagramHeight);
     bgRect.addClass('causalBgRect');
