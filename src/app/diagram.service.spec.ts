@@ -767,6 +767,7 @@ describe('DiagramService', () => {
           "targetJuggler": 1,
           "throwHeight": 3
         };
+        service.diagramWidth = 100000;
       });
 
       it('should draw 3 self', function () {
@@ -860,6 +861,7 @@ describe('DiagramService', () => {
           "targetJuggler": 1,
           "throwHeight": 3
         };
+        service.diagramWidth = 100000;
       });
       it('should draw self 2', function () {
         const id = 'foobar';
