@@ -115,5 +115,7 @@
       }
     }
   },
-  "defaultProject": "causal-diagram"
+  "cli": {
+    "analytics": false
+  }
 }
