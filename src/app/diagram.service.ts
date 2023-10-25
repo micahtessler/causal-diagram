@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Throw } from './model/Throw';
-import { Pattern } from './model/Pattern';
 import { PatternService } from './pattern.service';
 import { Position } from './model/Position';
 import { Subject } from 'rxjs';
@@ -289,7 +288,7 @@ export class DiagramService {
   }
 
   getTargetThrow(startBeat: number, sourceThrow: Throw, beats: Array<Beat>): Throw {
-    let targetBeatNumber = (startBeat + sourceThrow.throwHeight - 2);
+    const targetBeatNumber = (startBeat + sourceThrow.throwHeight - 2);
 
     const targetBeat = beats[targetBeatNumber % beats.length].throws.find((t) => {
       return (t.sourceJuggler === sourceThrow.targetJuggler);
@@ -332,19 +331,15 @@ export class DiagramService {
       beat2Pos = this.getZipReceivePosition(beat2Nb, throwObj.targetJuggler);
       beat2Radius = this.ZIP_RADIUS;
     }
-    let straightThrow = false;
-    let upThrow = false;
     let startPos;
     let endPos;
 
     if (throwObj.sourceJuggler === throwObj.targetJuggler) {
-      straightThrow = true;
       startPos = this.getCircleRight(beat1Pos, beat1Radius);
       endPos = this.getCircleLeft(beat2Pos, beat2Radius);
     } else {
       // this must be a positive height
       if (throwObj.sourceJuggler > throwObj.targetJuggler) {
-        upThrow = true;
         startPos = this.getCircleUpperRight(beat1Pos, beat1Radius);
         endPos = this.getCircleLowerLeft(beat2Pos, beat2Radius);
       } else {
@@ -408,7 +403,7 @@ export class DiagramService {
       radiusY = 100 * (beatDiff - 1);
     }
 
-    let pathStr = 'm ' + startPos.x + ' ' + startPos.y + ' A ' + radiusX + ' ' +
+    const pathStr = 'm ' + startPos.x + ' ' + startPos.y + ' A ' + radiusX + ' ' +
       radiusY + ' ' + rotation + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + endPos.x + ' ' + endPos.y;
     const path = draw.path(pathStr);
     path.addClass('causal_pass_line');

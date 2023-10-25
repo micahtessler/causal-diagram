@@ -162,11 +162,7 @@ describe('DiagramService', () => {
   describe('getBeatPosition', () => {
     let circle_corner_adj;
     let zip_corner_adj;
-    let totalBeats;
-    let totalJugglers;
     beforeEach(function () {
-      totalBeats = 20;
-      totalJugglers = 20;
       circle_corner_adj = (Math.round((Math.cos(service.CIRCLE_CORNER_ANGLE) * service.CIRCLE_RADIUS) * 100) / 100);
       zip_corner_adj = (Math.round((Math.cos(service.CIRCLE_CORNER_ANGLE) * service.ZIP_RADIUS) * 100) / 100);
     });
@@ -509,7 +505,7 @@ describe('DiagramService', () => {
   });
 
   describe('drawThrows', () => {
-    let drawSpy, arrowMarker, throws, borderEast, borderWest;
+    let drawSpy, arrowMarker, throws;
     let targetThrow;
     beforeEach(() => {
       drawSpy = {
@@ -523,12 +519,6 @@ describe('DiagramService', () => {
 
       arrowMarker = {
         id: 'foo'
-      };
-      borderEast = {
-        id: 'east'
-      };
-      borderWest = {
-        id: 'west'
       };
       targetThrow = {
         "sourceJuggler": 1,
@@ -635,22 +625,15 @@ describe('DiagramService', () => {
     });
   });
   describe('draw throws', function () {
-
-    let totalBeats;
-    let totalJugglers;
     let throwObj;
     let drawSpy;
     let arrowMarker;
-    let borderEast;
-    let borderWest;
     let lineSpy;
     let lineSpy2;
     let pathSpy;
     let pathSpy2;
 
     beforeEach(function () {
-      totalBeats = 3;
-      totalJugglers = 3;
       throwObj = {
         sourceJuggler: 0,
         sourceHand: 'R',
@@ -707,12 +690,6 @@ describe('DiagramService', () => {
       };
       arrowMarker = {
         id: 'arrow'
-      };
-      borderEast = {
-        id: 'east'
-      };
-      borderWest = {
-        id: 'west'
       };
     });
 

@@ -1,6 +1,5 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { PatternService } from '../pattern.service';
-import { DiagramService } from '../diagram.service';
 
 @Component({
   selector: 'app-diagram-card',

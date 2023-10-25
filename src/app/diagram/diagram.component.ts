@@ -1,6 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { DiagramService } from '../diagram.service';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-diagram',
