@@ -7,12 +7,12 @@ import { LayoutModule } from '@angular/cdk/layout';
 import { DiagramCardComponent } from './diagram-card/diagram-card.component';
 import {DiagramComponent} from './diagram/diagram.component';
 import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatButtonModule} from '@angular/material/button';
+import {MatLegacyButtonModule as MatButtonModule} from '@angular/material/legacy-button';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatIconModule} from '@angular/material/icon';
-import {MatListModule} from '@angular/material/list';
-import {MatCardModule} from '@angular/material/card';
-import {MatMenuModule} from '@angular/material/menu';
+import {MatLegacyListModule as MatListModule} from '@angular/material/legacy-list';
+import {MatLegacyCardModule as MatCardModule} from '@angular/material/legacy-card';
+import {MatLegacyMenuModule as MatMenuModule} from '@angular/material/legacy-menu';
 
 
 describe('AppComponent', () => {
