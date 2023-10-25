@@ -398,7 +398,7 @@ describe('DiagramService', () => {
           expect(textSpy.x.calls.argsFor(beat * totalJugglers + juggler)).
             toEqual([pos.x - getTextXOffset(throws[juggler].sourceHand)]);
           expect(textSpy.y.calls.argsFor(beat * totalJugglers + juggler)).
-            toEqual([pos.y - 30]);
+            toEqual([pos.y ]);
           expect(textSpy.id.calls.argsFor(beat * totalJugglers + juggler)).
             toEqual(['causal_beat_label_' + beat + '_juggler_' + juggler]);
           expect(textSpy.addClass.calls.argsFor(beat * totalJugglers + juggler)).
@@ -474,7 +474,7 @@ describe('DiagramService', () => {
         expect(textSpy.x.calls.argsFor(2 * juggler)).
           toEqual([pos.x - service.ZIP_X_OFFSET - getTextXOffset(getOtherHand(throws[juggler].sourceHand))]);
         expect(textSpy.y.calls.argsFor(2 * juggler)).
-          toEqual([pos.y - service.ZIP_Y_OFFSET - 30]);
+          toEqual([pos.y - service.ZIP_Y_OFFSET]);
         expect(textSpy.id.calls.argsFor(2 * juggler)).
           toEqual(['causal_beat_label_' + beat + '_juggler_' + juggler + '_0']);
         expect(textSpy.addClass.calls.argsFor(2 * juggler)).
@@ -489,7 +489,7 @@ describe('DiagramService', () => {
         expect(textSpy.x.calls.argsFor(2 * juggler + 1)).
           toEqual([pos.x + service.ZIP_X_OFFSET - getTextXOffset(throws[juggler].sourceHand)]);
         expect(textSpy.y.calls.argsFor(2 * juggler + 1)).
-          toEqual([pos.y + service.ZIP_Y_OFFSET - 30]);
+          toEqual([pos.y + service.ZIP_Y_OFFSET]);
         expect(textSpy.id.calls.argsFor(2 * juggler + 1)).
           toEqual(['causal_beat_label_' + beat + '_juggler_' + juggler + '_1']);
         expect(textSpy.addClass.calls.argsFor(2 * juggler + 1)).

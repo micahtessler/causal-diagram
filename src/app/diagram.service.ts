@@ -200,7 +200,7 @@ export class DiagramService {
 
     const text = draw.text(throwObj.sourceHand);
     text.x(pos.x - this.getTextXOffset(throwObj.sourceHand));
-    text.y(pos.y - 30);
+    text.y(pos.y);
     text.id('causal_beat_label_' + beatNb + '_juggler_' + throwObj.sourceJuggler);
     text.addClass('causal_beat_label');
     text.font({
@@ -238,7 +238,7 @@ export class DiagramService {
 
     const textTop = draw.text(this.getOtherHand(throwObj.sourceHand));
     textTop.x(pos0.x - this.getTextXOffset(this.getOtherHand(throwObj.sourceHand)));
-    textTop.y(pos0.y - 30);
+    textTop.y(pos0.y);
     textTop.id('causal_beat_label_' + beatNb + '_juggler_' + throwObj.sourceJuggler + '_0');
     textTop.addClass('causal_beat_label');
     textTop.font({
@@ -257,7 +257,7 @@ export class DiagramService {
 
     const textBottom = draw.text(throwObj.sourceHand);
     textBottom.x(pos1.x - this.getTextXOffset(throwObj.sourceHand));
-    textBottom.y(pos1.y - 30);
+    textBottom.y(pos1.y);
     textBottom.id('causal_beat_label_' + beatNb + '_juggler_' + throwObj.sourceJuggler + '_1');
     textBottom.addClass('causal_beat_label');
     textBottom.font({
