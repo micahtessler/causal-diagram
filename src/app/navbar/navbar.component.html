@@ -2,7 +2,7 @@
   <mat-sidenav #drawer class="sidenav" fixedInViewport="true"
       [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
       [mode]="(isHandset$ | async) ? 'over' : 'side'"
-      [opened]="!(isHandset$ | async)">
+      [opened]="(isHandset$ | async) === false">
     <mat-nav-list>
 
       <button class="menuBarButton" mat-button [matMenuTriggerFor]="patternMenu">Select Pattern</button>
