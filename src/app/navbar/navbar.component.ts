@@ -5,13 +5,22 @@ import { map } from 'rxjs/operators';
 import { Pattern } from '../model/Pattern';
 import { PatternService } from '../pattern.service';
 import { DiagramService } from '../diagram.service';
+import { MatSidenavContainer, MatSidenav, MatSidenavContent } from '@angular/material/sidenav';
+import { MatNavList, MatListItem } from '@angular/material/list';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
+import { MatToolbar } from '@angular/material/toolbar';
+import { MatIcon } from '@angular/material/icon';
+import { DiagramCardComponent } from '../diagram-card/diagram-card.component';
+import { AsyncPipe } from '@angular/common';
 
 
 
 @Component({
-  selector: 'app-navbar',
-  templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.css'],
+    selector: 'app-navbar',
+    templateUrl: './navbar.component.html',
+    styleUrls: ['./navbar.component.css'],
+    imports: [MatSidenavContainer, MatSidenav, MatNavList, MatButton, MatMenuTrigger, MatMenu, MatMenuItem, MatListItem, MatSidenavContent, MatToolbar, MatIconButton, MatIcon, DiagramCardComponent, AsyncPipe]
 })
 export class NavbarComponent {
 

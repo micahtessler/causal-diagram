@@ -1,21 +1,22 @@
-<mat-card class="example-card" *ngIf="patternService.selectedPattern">
-  <mat-card-header>
-    <div mat-card-avatar></div>
-    <mat-card-title>{{patternService.selectedPattern.name}}</mat-card-title>
-    <!--<mat-card-subtitle>Dog Breed</mat-card-subtitle>-->
-  </mat-card-header>
-  <app-diagram></app-diagram>
-  <mat-card-content>
-    <ul>
-      <li> {{patternService.selectedPattern.jugglerCount}} Jugglers</li>
-      <li> {{patternService.clubCount(patternService.selectedPattern)}} Clubs</li>
-    </ul>
-
-  </mat-card-content>
-  <!--
-  <mat-card-actions>
-    <button mat-button>LIKE</button>
-    <button mat-button>SHARE</button>
-  </mat-card-actions>
-  -->
-</mat-card>
+@if (patternService.selectedPattern) {
+  <mat-card class="example-card">
+    <mat-card-header>
+      <div mat-card-avatar></div>
+      <mat-card-title>{{patternService.selectedPattern.name}}</mat-card-title>
+      <!--<mat-card-subtitle>Dog Breed</mat-card-subtitle>-->
+    </mat-card-header>
+    <app-diagram></app-diagram>
+    <mat-card-content>
+      <ul>
+        <li> {{patternService.selectedPattern.jugglerCount}} Jugglers</li>
+        <li> {{patternService.clubCount(patternService.selectedPattern)}} Clubs</li>
+      </ul>
+    </mat-card-content>
+    <!--
+    <mat-card-actions>
+      <button mat-button>LIKE</button>
+      <button mat-button>SHARE</button>
+    </mat-card-actions>
+    -->
+  </mat-card>
+}

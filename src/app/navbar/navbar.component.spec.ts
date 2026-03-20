@@ -12,12 +12,11 @@ describe('NavbarComponent', () => {
   const myPattern: Pattern = fourCount as Pattern;
 
   beforeEach(() => {
-    breakpointObserver = new BreakpointObserver(null, null);
+    breakpointObserver = { observe: jasmine.createSpy().and.returnValue(of({ matches: false })) } as any;
     patternService = {};
     diagramService ={
       drawSVG: jasmine.createSpy()
     }
-    spyOn(breakpointObserver, 'observe').and.returnValue(of(null));
     component = new NavbarComponent(breakpointObserver, patternService, diagramService);
 
   });

@@ -2,9 +2,9 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { DiagramService } from '../diagram.service';
 
 @Component({
-  selector: 'app-diagram',
-  templateUrl: './diagram.component.html',
-  styleUrls: ['./diagram.component.css']
+    selector: 'app-diagram',
+    templateUrl: './diagram.component.html',
+    styleUrls: ['./diagram.component.css']
 })
 export class DiagramComponent implements OnInit {
   @ViewChild('diagramDiv', {static: true}) diagramDiv: ElementRef;
